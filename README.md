@@ -43,5 +43,5 @@ Avant de commencer, assurez-vous d'avoir installé les éléments suivants :
 1. **Cloner le dépôt** :
 
    ```bash
-   git clone https://github.com/votre-utilisateur/h5book_blog.git
+   git clone https://github.com/Lejeunesage/h5book_blog.git
    cd h5book_blog
