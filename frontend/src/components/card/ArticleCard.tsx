@@ -2,10 +2,18 @@
 "use client";
 import { useState } from 'react';
 import Image from 'next/image';
-import { FaBookmark, FaHeart, FaCommentAlt, FaShare, FaBookOpen } from 'react-icons/fa';
+import { FaBookmark, FaHeart, FaCommentAlt, FaShare, FaBookOpen, FaStar } from 'react-icons/fa';
 import Comment from '../posts/Comment';
 import CommentForm from '../posts/CommentForm';
 import { Article } from '@/types';
+
+// Fonction pour calculer le temps de lecture
+const calculateReadingTime = (text: string) => {
+  const wordsPerMinute = 200; 
+  const wordCount = text.split(' ').length;
+  const minutes = Math.ceil(wordCount / wordsPerMinute);
+  return minutes;
+};
 
 interface ArticleCardProps {
   article: Article;
@@ -15,7 +23,6 @@ interface ArticleCardProps {
   onLike: (e: React.MouseEvent<HTMLButtonElement>) => void;
   onBookmark: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
-
 
 const ArticleCard: React.FC<ArticleCardProps> = ({ article, onOpenArticle, liked, bookmarked, onLike, onBookmark }) => {
   const [showComments, setShowComments] = useState(false);
@@ -35,6 +42,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article, onOpenArticle, liked
       ]
     }
   ]);
+  const [favorited, setFavorited] = useState(false);
 
   const handleAddComment = (content: any) => {
     const newComment = {
@@ -71,48 +79,47 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article, onOpenArticle, liked
     setComments(comments.filter(comment => comment.id !== commentId));
   };
 
+  const readingTime = calculateReadingTime(article.content); 
+
   return (
     <div className="bg-white rounded-lg shadow p-4 mb-6 hover:shadow-lg transition-shadow">
-      {/* Zone cliquable du titre et de l'image */}
-      <div 
-        className="border-b pb-4 mb-4 cursor-pointer group"
+      <div
+        className="cursor-pointer"
         onClick={() => onOpenArticle(article)}
       >
-        <div className="flex items-start justify-between relative">
-          <div className="flex-1">
-            <h2 className="text-xl font-semibold mb-2 group-hover:text-blue-600 transition-colors">
-              {article.title}
-            </h2>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <span>Par {article.author}</span>
-              <span>•</span>
-              <span>{article.time}</span>
-            </div>
-          </div>
-          <Image
-            className="rounded ml-4 object-cover"
-            src={article.image}
-            alt={article.title}
-            width={80}
-            height={80}
-          />
-          <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-5 transition-opacity rounded-lg"></div>
+        {/* Affichage de la catégorie en haut */}
+        <div className="text-sm text-white bg-blue-600 px-2 py-1 rounded mb-2 inline-block">
+          {article.category}
         </div>
-      </div>
-
-      <div className="text-gray-700">
-        <p className="text-gray-600">{article.summary}</p>
-        <div className="flex items-center gap-2 mt-2">
-          <button className="border border-blue-600 text-blue-600 hover:bg-blue-100 px-2 py-1 text-sm rounded">
-            {article.category}
-          </button>
-          <button 
-            onClick={() => onOpenArticle(article)}
-            className="inline-flex items-center gap-2 border border-blue-600 text-blue-600 hover:bg-blue-100 px-3 py-1 text-sm rounded"
-          >
-            <FaBookOpen className="h-4 w-4" />
-            Lire l'article
-          </button>
+        <h2 className="text-xl font-semibold mb-2">{article.title}</h2>
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+          <span>Par : {article.author}</span>
+          <span>•</span>
+          <span>{article.time}</span>
+          <span>•</span>
+          <span>{readingTime} min de lecture</span> 
+        </div>
+        <div className="grid grid-cols-2 items-start justify-between gap-4">
+          <div className="relative h-48 w-full overflow-hidden rounded">
+            <Image
+              src={article.image}
+              alt={article.title}
+              layout="fill"
+              objectFit="cover"
+              className="group-hover:scale-105 transition-transform duration-300 ease-in-out"
+            />
+          </div>
+          <p className="text-gray-600 line-clamp-3">{article.summary}</p>
+        </div>
+        <div className="flex items-center gap-2 mt-4">
+          {article.tags?.map((tag) => (
+            <button
+              key={tag}
+              className="border border-gray-400 text-gray-600 hover:bg-gray-100 px-2 py-1 text-sm rounded"
+            >
+              #{tag}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -135,7 +142,19 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article, onOpenArticle, liked
             onClick={() => setShowComments(!showComments)}
           >
             <FaCommentAlt className="h-4 w-4 mr-1" />
-            {comments.length}
+            {article.commentCount}
+          </button>
+          {/* Bouton pour l'ajout aux favoris */}
+          <button
+            className={`inline-flex items-center justify-center font-medium rounded px-2 py-1 text-sm ${
+              favorited ? 'text-yellow-500' : 'text-gray-600 hover:bg-gray-100'
+            }`}
+            onClick={(e) => {
+              e.stopPropagation();
+              setFavorited(!favorited);
+            }}
+          >
+            <FaStar className={`h-4 w-4 ${favorited ? 'fill-current' : ''}`} />
           </button>
         </div>
         <div className="flex gap-2">
@@ -152,6 +171,13 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article, onOpenArticle, liked
           </button>
           <button className="inline-flex items-center justify-center font-medium rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100">
             <FaShare className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => onOpenArticle(article)}
+            className="inline-flex items-center justify-center font-medium rounded px-3 py-1 text-sm text-blue-600 hover:bg-blue-100"
+          >
+            <FaBookOpen className="h-4 w-4 mr-1" />
+            Lire
           </button>
         </div>
       </div>

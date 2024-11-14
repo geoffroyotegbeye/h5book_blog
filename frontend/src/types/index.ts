@@ -7,6 +7,7 @@ export interface Article {
   author: string;
   source: string;
   category: string;
+  tags: string[];
   summary: string;
   content: string;
   likes: number;
@@ -30,4 +31,24 @@ export interface ReplyType {
   author: string;
   content: string;
   time: string;
+}
+
+export interface Notification {
+  id: number;
+  title: string;
+  time: string;
+  isUnread: boolean;
+}
+
+export interface UserProfile {
+  name: string;
+  username: string;
+  joinedDate: string;
+  avatar: string;
+}
+
+export interface MenuItem {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  action: () => void;
 }
