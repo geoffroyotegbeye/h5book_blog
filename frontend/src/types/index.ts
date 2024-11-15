@@ -14,6 +14,7 @@ export interface Article {
   comments: number;
   time: string;
   image: string;
+  favorite: boolean;
 }
 
 // Type pour un commentaire

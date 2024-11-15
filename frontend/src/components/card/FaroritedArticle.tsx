@@ -1,4 +1,4 @@
-// components/card/ArticleCard.tsx
+// components/card/FaroritedArticle.tsx
 "use client";
 import { useState } from 'react';
 import Image from 'next/image';
@@ -14,23 +14,23 @@ const calculateReadingTime = (text: string): number => {
   return Math.ceil(wordCount / wordsPerMinute);
 };
 
-interface ArticleCardProps {
+interface FaroritedArticleProps {
   article: Article;
   onOpenArticle: (article: Article) => void;
   liked: boolean;
   bookmarked: boolean;
-  favorite: boolean;
+  favorited: boolean;
   onLike: (e: React.MouseEvent<HTMLButtonElement>) => void;
   onBookmark: (e: React.MouseEvent<HTMLButtonElement>) => void;
   onFavorite: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
-const ArticleCard: React.FC<ArticleCardProps> = ({
+const FaroritedArticle: React.FC<FaroritedArticleProps> = ({
   article,
   onOpenArticle,
   liked,
   bookmarked,
-  favorite,
+  favorited,
   onLike,
   onBookmark,
   onFavorite
@@ -65,23 +65,24 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
   };
 
   const handleAddReply = (commentId: string, content: string) => {
-    setComments(comments.map(comment => {
-      if (comment.id === commentId) {
-        return {
-          ...comment,
-          replies: [
-            ...(comment.replies || []),
-            {
-              id: Date.now().toString(),
-              author: "Utilisateur",
-              content,
-              time: "À l'instant"
+    setComments(
+      comments.map(comment =>
+        comment.id === commentId
+          ? {
+              ...comment,
+              replies: [
+                ...(comment.replies || []),
+                {
+                  id: Date.now().toString(),
+                  author: "Utilisateur",
+                  content,
+                  time: "À l'instant"
+                }
+              ]
             }
-          ]
-        };
-      }
-      return comment;
-    }));
+          : comment
+      )
+    );
   };
 
   const handleDeleteComment = (commentId: string) => {
@@ -92,11 +93,8 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow p-4 mb-6 hover:shadow-lg transition-shadow">
-      <div
-        className="cursor-pointer"
-        onClick={() => onOpenArticle(article)}
-      >
-        {/* Affichage de la catégorie en haut */}
+      <div className="cursor-pointer" onClick={() => onOpenArticle(article)}>
+        {/* Affichage de la catégorie */}
         <div className="text-sm text-white bg-blue-600 px-2 py-1 rounded mb-2 inline-block">
           {article.category}
         </div>
@@ -106,7 +104,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
           <span>•</span>
           <span>{article.time}</span>
           <span>•</span>
-          <span>{readingTime} min de lecture</span> 
+          <span>{readingTime} min de lecture</span>
         </div>
         <div className="grid grid-cols-2 items-start justify-between gap-4">
           <div className="relative h-48 w-full overflow-hidden rounded">
@@ -121,7 +119,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
           <p className="text-gray-600 line-clamp-3">{article.summary}</p>
         </div>
         <div className="flex items-center gap-2 mt-4">
-          {article.tags?.map((tag) => (
+          {article.tags?.map(tag => (
             <button
               key={tag}
               className="border border-gray-400 text-gray-600 hover:bg-gray-100 px-2 py-1 text-sm rounded"
@@ -134,53 +132,63 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
 
       <div className="flex justify-between border-t pt-4 mt-4">
         <div className="flex gap-4">
+          {/* Bouton Like */}
           <button
+            aria-label="Like this article"
             className={`inline-flex items-center justify-center font-medium rounded px-2 py-1 text-sm ${
               liked ? 'text-blue-600' : 'text-gray-600 hover:bg-gray-100'
             }`}
-            onClick={(e) => {
-              e.stopPropagation();
-              onLike(e);
-            }}
+            onClick={onLike}
           >
             <FaHeart className="h-4 w-4 mr-1" />
             {article.likes + (liked ? 1 : 0)}
           </button>
-          <button
+
+          {/* Bouton Commentaires */}
+          {/* <button
+            aria-label="Toggle comments"
             className="inline-flex items-center justify-center font-medium rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100"
             onClick={() => setShowComments(!showComments)}
           >
             <FaCommentAlt className="h-4 w-4 mr-1" />
             {comments.length}
-          </button>
+          </button> */}
+
+          {/* Bouton Favori */}
           <button
+            aria-label="Favorite this article"
             className={`inline-flex items-center justify-center font-medium rounded px-2 py-1 text-sm ${
-              favorite ? 'text-yellow-500' : 'text-gray-600 hover:bg-gray-100'
+              favorited ? 'text-yellow-500' : 'text-gray-600 hover:bg-gray-100'
             }`}
-            onClick={(e) => {
-              e.stopPropagation();
-              onFavorite(e);
-            }}
+            onClick={onFavorite}
           >
-            <FaStar className={`h-4 w-4 ${favorite ? 'fill-current' : ''}`} />
+            <FaStar className={`h-4 w-4 ${favorited ? 'fill-current' : ''}`} />
           </button>
         </div>
+
         <div className="flex gap-2">
+          {/* Bouton Bookmark */}
           <button
+            aria-label="Bookmark this article"
             className={`inline-flex items-center justify-center font-medium rounded px-2 py-1 text-sm ${
               bookmarked ? 'text-blue-600' : 'text-gray-600 hover:bg-gray-100'
             }`}
-            onClick={(e) => {
-              e.stopPropagation();
-              onBookmark(e);
-            }}
+            onClick={onBookmark}
           >
             <FaBookmark className="h-4 w-4" />
           </button>
-          <button className="inline-flex items-center justify-center font-medium rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100">
+
+          {/* Bouton Partage */}
+          <button
+            aria-label="Share this article"
+            className="inline-flex items-center justify-center font-medium rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100"
+          >
             <FaShare className="h-4 w-4" />
           </button>
+
+          {/* Bouton Lire */}
           <button
+            aria-label="Read this article"
             onClick={() => onOpenArticle(article)}
             className="inline-flex items-center justify-center font-medium rounded px-3 py-1 text-sm text-blue-600 hover:bg-blue-100"
           >
@@ -190,11 +198,10 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
         </div>
       </div>
 
-      {/* Section commentaires */}
+      {/* Section Commentaires */}
       {showComments && (
         <div className="mt-4 border-t pt-4">
           <CommentForm onSubmit={handleAddComment} />
-          
           <div className="mt-6">
             {comments.map(comment => (
               <Comment
@@ -211,4 +218,4 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
   );
 };
 
-export default ArticleCard;
+export default FaroritedArticle;

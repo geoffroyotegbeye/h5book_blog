@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// components/card/ArticleModal.tsx
+import React from 'react';
 import Image from 'next/image';
 import { FaBookmark, FaHeart, FaCommentAlt, FaShare, FaTimes, FaStar } from 'react-icons/fa';
 import CommentForm from './CommentForm';
@@ -6,11 +7,10 @@ import Comment from './Comment';
 import { Article, CommentType } from '@/types';
 
 // Fonction pour calculer le temps de lecture
-const calculateReadingTime = (text: string) => {
-  const wordsPerMinute = 200; 
+const calculateReadingTime = (text: string): number => {
+  const wordsPerMinute = 200;
   const wordCount = text.split(' ').length;
-  const minutes = Math.ceil(wordCount / wordsPerMinute);
-  return minutes;
+  return Math.ceil(wordCount / wordsPerMinute);
 };
 
 interface ArticleModalProps {
@@ -25,6 +25,8 @@ interface ArticleModalProps {
   onLike: () => void;
   bookmarked: boolean;
   onBookmark: () => void;
+  favorited: boolean;
+  onFavorite: () => void;
 }
 
 const ArticleModal: React.FC<ArticleModalProps> = ({
@@ -39,12 +41,12 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
   onLike,
   bookmarked,
   onBookmark,
+  favorited,
+  onFavorite,
 }) => {
-  const [favorited, setFavorited] = useState(false);
-
   if (!isOpen) return null;
 
-  const readingTime = calculateReadingTime(article.summary); // Calcul du temps de lecture
+  const readingTime = calculateReadingTime(article.summary);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
@@ -60,7 +62,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
           {/* Article content */}
           <div className="p-6">
-            {/* Affichage de la catégorie en haut */}
             <div className="text-sm text-white bg-blue-600 px-2 py-1 rounded mb-2 inline-block">
               {article.category}
             </div>
@@ -75,10 +76,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                     <p className="text-sm">{article.time}</p>
                   </div>
                 </div>
-                {/* <span>•</span> */}
-                {/* <span>{article.source}</span> */}
                 <span>•</span>
-                <div className="text-sm ">
+                <div className="text-sm">
                   Temps de lecture : {readingTime} min
                 </div>
               </div>
@@ -92,11 +91,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                 />
               </div>
 
-              {/* Article full content */}
               <div className="prose max-w-none">
                 <p className="text-gray-700 leading-relaxed mb-6">{article.summary}</p>
                 <p className="text-gray-700 leading-relaxed mb-6">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                 </p>
               </div>
 
@@ -133,23 +131,19 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                     <FaHeart />
                     <span>{article.likes + (liked ? 1 : 0)}</span>
                   </button>
+
                   <button className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100">
                     <FaCommentAlt />
                     <span>{comments.length}</span>
                   </button>
-                          
+
+                  {/* Bouton Favori */}
                   <button
-                    className={`inline-flex items-center justify-center font-medium rounded px-3 py-0.5 -mt-1 text-sm ${
-                      favorited ? 'text-yellow-500' : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setFavorited(!favorited);
-                    }}
+                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg ${favorited ? 'text-yellow-500' : 'text-gray-600 hover:bg-gray-100'}`}
+                    onClick={onFavorite}
                   >
-                    <FaStar className={`h-4 w-4 ${favorited ? 'fill-current' : ''}`} />
+                    <FaStar />
                   </button>
-             
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -163,8 +157,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                   </button>
                 </div>
               </div>
-
-              
             </div>
 
             {/* Comments section */}

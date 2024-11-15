@@ -20,7 +20,8 @@ const articles: Article[] = [
     likes: 42,
     comments: 12,
     time: "Il y a 2h",
-    image: "https://cdn.leonardo.ai/users/75be81c6-02b9-4765-9902-3940da5d8f94/generations/825fa874-6cdc-4cdb-9a77-1d5f875a9a73/Leonardo_Phoenix_Description_A_darkened_scene_where_the_Deputy_0.jpg?w=512"
+    image: "https://cdn.leonardo.ai/users/75be81c6-02b9-4765-9902-3940da5d8f94/generations/825fa874-6cdc-4cdb-9a77-1d5f875a9a73/Leonardo_Phoenix_Description_A_darkened_scene_where_the_Deputy_0.jpg?w=512",
+    favorite: true
   },
   {
     id: "azertyup",
@@ -34,7 +35,8 @@ const articles: Article[] = [
     likes: 38,
     comments: 8,
     time: "Il y a 5h",
-    image: "https://cdn.leonardo.ai/users/83a0a692-8a58-450e-8f43-3630710f9e9a/generations/7193be61-f386-4cf8-a987-6c91c91b4ba6/Leonardo_Lightning_XL_watercolor_art_two_little_cartoon_hearts_1.jpg?w=512"
+    image: "https://cdn.leonardo.ai/users/83a0a692-8a58-450e-8f43-3630710f9e9a/generations/7193be61-f386-4cf8-a987-6c91c91b4ba6/Leonardo_Lightning_XL_watercolor_art_two_little_cartoon_hearts_1.jpg?w=512",
+    favorite: true
   },
   {
     id: "qwertyuio",
@@ -48,7 +50,8 @@ const articles: Article[] = [
     likes: 58,
     comments: 23,
     time: "Il y a 3 jours",
-    image: "https://cdn.leonardo.ai/users/844f14c0-aedf-4573-822c-198ab2d3bcbf/generations/02964e94-2d3b-42ac-af09-09cf68a037f8/Leonardo_Phoenix_Create_a_stunning_futuristic_visualization_th_0.jpg?w=512"
+    image: "https://cdn.leonardo.ai/users/844f14c0-aedf-4573-822c-198ab2d3bcbf/generations/02964e94-2d3b-42ac-af09-09cf68a037f8/Leonardo_Phoenix_Create_a_stunning_futuristic_visualization_th_0.jpg?w=512",
+    favorite: false
   },
   {
     id: "qsdfghjk",
@@ -62,7 +65,8 @@ const articles: Article[] = [
     likes: 92,
     comments: 47,
     time: "Il y a 1 semaine",
-    image: "https://cdn.leonardo.ai/users/dee1e8a1-eb86-4508-9555-d9e9befb9275/generations/329cb053-012e-4d7b-a5cc-c5c11522a6ef/variations/alchemyrefiner_alchemymagic_0_329cb053-012e-4d7b-a5cc-c5c11522a6ef_0.jpg?w=512"
+    image: "https://cdn.leonardo.ai/users/dee1e8a1-eb86-4508-9555-d9e9befb9275/generations/329cb053-012e-4d7b-a5cc-c5c11522a6ef/variations/alchemyrefiner_alchemymagic_0_329cb053-012e-4d7b-a5cc-c5c11522a6ef_0.jpg?w=512",
+    favorite: true
   },
   {
     id: "zxcvbnmq",
@@ -76,17 +80,18 @@ const articles: Article[] = [
     likes: 74,
     comments: 35,
     time: "Il y a 2 semaines",
-    image: "https://cdn.leonardo.ai/users/8fca176b-019f-4858-9163-586ebfe096ac/generations/2cfd0a7c-0888-44a3-84a1-456289df3227/variations/alchemyrefiner_alchemymagic_1_2cfd0a7c-0888-44a3-84a1-456289df3227_0.jpg?w=512"
+    image: "https://cdn.leonardo.ai/users/8fca176b-019f-4858-9163-586ebfe096ac/generations/2cfd0a7c-0888-44a3-84a1-456289df3227/variations/alchemyrefiner_alchemymagic_1_2cfd0a7c-0888-44a3-84a1-456289df3227_0.jpg?w=512",
+    favorite: false
   }
 ];
 
 const Home: React.FC = () => {
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
-  const [articleStates, setArticleStates] = useState<Record<string, { liked: boolean; bookmarked: boolean }>>(
+  const [articleStates, setArticleStates] = useState<Record<string, { liked: boolean; bookmarked: boolean; favorited: boolean }>>(
     articles.reduce((acc, article) => ({
       ...acc,
-      [article.id]: { liked: false, bookmarked: false }
+      [article.id]: { liked: false, bookmarked: false, favorited: article.favorite }
     }), {})
   );
 
@@ -175,6 +180,16 @@ const Home: React.FC = () => {
     }));
   };
 
+  const handleFavorite = (articleId: string) => {
+    setArticleStates(prev => ({
+      ...prev,
+      [articleId]: {
+        ...prev[articleId],
+        favorited: !prev[articleId].favorited
+      }
+    }));
+  };
+
   return (
     <div className=" bg-gray-50">
         <main className="max-w-7xl mx-auto ">
@@ -187,18 +202,23 @@ const Home: React.FC = () => {
                   key={article.id}
                 >
                   <ArticleCard 
-                    article={article}
-                    liked={articleStates[article.id]?.liked}
-                    bookmarked={articleStates[article.id]?.bookmarked}
-                    onLike={(e) => {
-                      e.stopPropagation();
-                      handleLike(article.id);
-                    }}
-                    onBookmark={(e) => {
-                      e.stopPropagation();
-                      handleBookmark(article.id);
-                    }}
-                    onOpenArticle={handleOpenArticle}
+                     article={article}
+                     liked={articleStates[article.id]?.liked}
+                     bookmarked={articleStates[article.id]?.bookmarked}
+                     favorited={articleStates[article.id]?.favorited}
+                     onLike={(e) => {
+                       e.stopPropagation();
+                       handleLike(article.id);
+                     }}
+                     onBookmark={(e) => {
+                       e.stopPropagation();
+                       handleBookmark(article.id);
+                     }}
+                     onFavorite={(e) => {
+                       e.stopPropagation();
+                       handleFavorite(article.id);
+                     }}
+                     onOpenArticle={handleOpenArticle}
                   />
                 </div>
               ))}
@@ -223,6 +243,8 @@ const Home: React.FC = () => {
         onLike={() => selectedArticle && handleLike(selectedArticle.id)}
         bookmarked={selectedArticle ? articleStates[selectedArticle.id]?.bookmarked : false}
         onBookmark={() => selectedArticle && handleBookmark(selectedArticle.id)}
+        favorited={ selectedArticle ? articleStates[selectedArticle.id]?.favorited : false}
+        onFavorite={() => selectedArticle && handleFavorite(selectedArticle.id)}
       />
 
     </div>
