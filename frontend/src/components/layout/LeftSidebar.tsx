@@ -1,4 +1,5 @@
 "use client";
+
 import { BiHome, BiBookOpen, BiGroup, BiBriefcase, BiCog, BiUser, BiBarChart, BiComment, BiSave, BiRefresh, BiShield, BiTag, BiUserPlus, BiLock, BiSearch, BiBell, BiWrench } from 'react-icons/bi';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -14,12 +15,6 @@ const navigationItems = [
 ];
 
 const adminMenuItems = [
-  // {
-  //   id: 1,
-  //   label: 'Tableau de bord',
-  //   icon: BiHome,
-  //   path: '/admin/dashboard',
-  // },
   {
     id: 2,
     label: 'Articles',
@@ -38,8 +33,8 @@ const adminMenuItems = [
     isDropdown: true,
     dropdownItems: [
       { id: 1, label: 'Tous les utilisateurs', icon: BiUser, path: '/admin/users' },
-      { id: 2, label: 'Ajouter un utilisateur', icon: BiUserPlus, path: '/admin/users/new' },
-      { id: 3, label: 'Rôles et permissions', icon: BiLock, path: '/admin/roles' },
+      { id: 2, label: 'Rôles', icon: BiUserPlus, path: '/admin/roles' },
+      { id: 3, label: 'Permissions', icon: BiLock, path: '/admin/permissions' },
     ],
   },
   {
@@ -48,39 +43,39 @@ const adminMenuItems = [
     icon: BiComment,
     path: '/admin/comments',
   },
-  {
-    id: 5,
-    label: 'Réglages',
-    icon: BiCog,
-    isDropdown: true,
-    dropdownItems: [
-      { id: 1, label: 'Paramètres du blog', icon: BiCog, path: '/admin/settings' },
-      { id: 2, label: 'SEO', icon: BiSearch, path: '/admin/seo' },
-      { id: 3, label: 'Notifications', icon: BiBell, path: '/admin/notifications' },
-    ],
-  },
-  {
-    id: 6,
-    label: 'Statistiques',
-    icon: BiBarChart,
-    isDropdown: true,
-    dropdownItems: [
-      { id: 1, label: 'Rapports de trafic', icon: BiBarChart, path: '/admin/reports/traffic' },
-      { id: 2, label: 'Rapports sur les articles', icon: BiBookOpen, path: '/admin/reports/articles' },
-      { id: 3, label: 'Rapports des commentaires', icon: BiComment, path: '/admin/reports/comments' },
-    ],
-  },
-  {
-    id: 7,
-    label: 'Maintenance',
-    icon: BiWrench,
-    isDropdown: true,
-    dropdownItems: [
-      { id: 1, label: 'Sauvegardes', icon: BiSave, path: '/admin/backup' },
-      { id: 2, label: 'Mises à jour', icon: BiRefresh, path: '/admin/updates' },
-      { id: 3, label: 'Sécurité', icon: BiShield, path: '/admin/security' },
-    ],
-  },
+  // {
+  //   id: 5,
+  //   label: 'Réglages',
+  //   icon: BiCog,
+  //   isDropdown: true,
+  //   dropdownItems: [
+  //     { id: 1, label: 'Paramètres du blog', icon: BiCog, path: '/admin/settings' },
+  //     { id: 2, label: 'SEO', icon: BiSearch, path: '/admin/seo' },
+  //     { id: 3, label: 'Notifications', icon: BiBell, path: '/admin/notifications' },
+  //   ],
+  // },
+  // {
+  //   id: 6,
+  //   label: 'Statistiques',
+  //   icon: BiBarChart,
+  //   isDropdown: true,
+  //   dropdownItems: [
+  //     { id: 1, label: 'Rapports de trafic', icon: BiBarChart, path: '/admin/reports/traffic' },
+  //     { id: 2, label: 'Rapports sur les articles', icon: BiBookOpen, path: '/admin/reports/articles' },
+  //     { id: 3, label: 'Rapports des commentaires', icon: BiComment, path: '/admin/reports/comments' },
+  //   ],
+  // },
+  // {
+  //   id: 7,
+  //   label: 'Maintenance',
+  //   icon: BiWrench,
+  //   isDropdown: true,
+  //   dropdownItems: [
+  //     { id: 1, label: 'Sauvegardes', icon: BiSave, path: '/admin/backup' },
+  //     { id: 2, label: 'Mises à jour', icon: BiRefresh, path: '/admin/updates' },
+  //     { id: 3, label: 'Sécurité', icon: BiShield, path: '/admin/security' },
+  //   ],
+  // },
 ];
 
 export default function LeftSidebar() {
@@ -112,7 +107,7 @@ export default function LeftSidebar() {
   };
 
   return (
-    <aside className="p-4 bg-white shadow-md rounded-lg sticky top-24">
+    <aside className="p-4 border shadow-md rounded-lg sticky top-24 bg-white text-gray-900 dark:bg-gray-800 dark:text-white">
       <h2 className="text-lg font-semibold mb-4">Menu</h2>
       <div className="space-y-2">
         {filteredNavigationItems.map((item) => {
@@ -123,7 +118,7 @@ export default function LeftSidebar() {
               <div key={item.id}>
                 <button
                   onClick={() => toggleDropdown(item.id)}
-                  className="flex items-center gap-3 p-2 w-full text-left rounded-lg transition-colors hover:bg-gray-100"
+                  className="flex items-center gap-3 p-2 w-full text-left rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
                   <Icon size={20} />
                   <span>{item.label}</span>
@@ -135,10 +130,9 @@ export default function LeftSidebar() {
                         key={dropdownItem.id}
                         href={dropdownItem.path}
                         onClick={() => setSelectedNav(dropdownItem.label)}
-                        className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
-                          selectedNav === dropdownItem.label
-                            ? 'bg-blue-50 text-blue-600'
-                            : 'hover:bg-gray-100'
+                        className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${selectedNav === dropdownItem.label
+                          ? 'bg-blue-50 text-blue-600 dark:bg-blue-600 dark:text-white'
+                          : 'hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300'
                         }`}
                       >
                         <dropdownItem.icon size={20} />
@@ -156,8 +150,9 @@ export default function LeftSidebar() {
               key={item.id}
               href={item.path}
               onClick={() => setSelectedNav(item.label)}
-              className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
-                selectedNav === item.label ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100'
+              className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${selectedNav === item.label
+                ? 'bg-blue-50 text-blue-600 dark:bg-blue-600 dark:text-white'
+                : 'hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300'
               }`}
             >
               <Icon size={20} />

@@ -1,4 +1,3 @@
-// components/card/FaroritedArticle.tsx
 "use client";
 import { useState } from 'react';
 import Image from 'next/image';
@@ -7,7 +6,6 @@ import Comment from '../posts/Comment';
 import CommentForm from '../posts/CommentForm';
 import { Article, CommentType, ReplyType } from '@/types';
 
-// Fonction pour calculer le temps de lecture
 const calculateReadingTime = (text: string): number => {
   const wordsPerMinute = 200;
   const wordCount = text.split(' ').length;
@@ -92,14 +90,13 @@ const FaroritedArticle: React.FC<FaroritedArticleProps> = ({
   const readingTime = calculateReadingTime(article.content);
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 mb-6 hover:shadow-lg transition-shadow">
+    <div className="bg-white border dark:bg-gray-800 dark:text-gray-200 rounded-lg shadow p-4 mb-6 hover:shadow-lg transition-shadow">
       <div className="cursor-pointer" onClick={() => onOpenArticle(article)}>
-        {/* Affichage de la catégorie */}
         <div className="text-sm text-white bg-blue-600 px-2 py-1 rounded mb-2 inline-block">
           {article.category}
         </div>
         <h2 className="text-xl font-semibold mb-2">{article.title}</h2>
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
           <span>Par : {article.author}</span>
           <span>•</span>
           <span>{article.time}</span>
@@ -116,13 +113,13 @@ const FaroritedArticle: React.FC<FaroritedArticleProps> = ({
               className="group-hover:scale-105 transition-transform duration-300 ease-in-out"
             />
           </div>
-          <p className="text-gray-600 line-clamp-3">{article.summary}</p>
+          <p className="text-gray-600 dark:text-gray-400 line-clamp-3">{article.summary}</p>
         </div>
         <div className="flex items-center gap-2 mt-4">
           {article.tags?.map(tag => (
             <button
               key={tag}
-              className="border border-gray-400 text-gray-600 hover:bg-gray-100 px-2 py-1 text-sm rounded"
+              className="border border-gray-400 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 text-sm rounded"
             >
               #{tag}
             </button>
@@ -130,35 +127,22 @@ const FaroritedArticle: React.FC<FaroritedArticleProps> = ({
         </div>
       </div>
 
-      <div className="flex justify-between border-t pt-4 mt-4">
+      <div className="flex justify-between border-t pt-4 mt-4 dark:border-gray-700">
         <div className="flex gap-4">
-          {/* Bouton Like */}
           <button
             aria-label="Like this article"
             className={`inline-flex items-center justify-center font-medium rounded px-2 py-1 text-sm ${
-              liked ? 'text-blue-600' : 'text-gray-600 hover:bg-gray-100'
+              liked ? 'text-blue-600' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
             }`}
             onClick={onLike}
           >
             <FaHeart className="h-4 w-4 mr-1" />
             {article.likes + (liked ? 1 : 0)}
           </button>
-
-          {/* Bouton Commentaires */}
-          {/* <button
-            aria-label="Toggle comments"
-            className="inline-flex items-center justify-center font-medium rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100"
-            onClick={() => setShowComments(!showComments)}
-          >
-            <FaCommentAlt className="h-4 w-4 mr-1" />
-            {comments.length}
-          </button> */}
-
-          {/* Bouton Favori */}
           <button
             aria-label="Favorite this article"
             className={`inline-flex items-center justify-center font-medium rounded px-2 py-1 text-sm ${
-              favorited ? 'text-yellow-500' : 'text-gray-600 hover:bg-gray-100'
+              favorited ? 'text-yellow-500' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
             }`}
             onClick={onFavorite}
           >
@@ -167,30 +151,25 @@ const FaroritedArticle: React.FC<FaroritedArticleProps> = ({
         </div>
 
         <div className="flex gap-2">
-          {/* Bouton Bookmark */}
           <button
             aria-label="Bookmark this article"
             className={`inline-flex items-center justify-center font-medium rounded px-2 py-1 text-sm ${
-              bookmarked ? 'text-blue-600' : 'text-gray-600 hover:bg-gray-100'
+              bookmarked ? 'text-blue-600' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
             }`}
             onClick={onBookmark}
           >
             <FaBookmark className="h-4 w-4" />
           </button>
-
-          {/* Bouton Partage */}
           <button
             aria-label="Share this article"
-            className="inline-flex items-center justify-center font-medium rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100"
+            className="inline-flex items-center justify-center font-medium rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
           >
             <FaShare className="h-4 w-4" />
           </button>
-
-          {/* Bouton Lire */}
           <button
             aria-label="Read this article"
             onClick={() => onOpenArticle(article)}
-            className="inline-flex items-center justify-center font-medium rounded px-3 py-1 text-sm text-blue-600 hover:bg-blue-100"
+            className="inline-flex items-center justify-center font-medium rounded px-3 py-1 text-sm text-blue-600 hover:bg-blue-100 dark:text-blue-400 dark:hover:bg-blue-500"
           >
             <FaBookOpen className="h-4 w-4 mr-1" />
             Lire
@@ -198,9 +177,8 @@ const FaroritedArticle: React.FC<FaroritedArticleProps> = ({
         </div>
       </div>
 
-      {/* Section Commentaires */}
       {showComments && (
-        <div className="mt-4 border-t pt-4">
+        <div className="mt-4 border-t pt-4 dark:border-gray-700">
           <CommentForm onSubmit={handleAddComment} />
           <div className="mt-6">
             {comments.map(comment => (

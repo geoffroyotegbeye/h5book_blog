@@ -1,4 +1,3 @@
-// app/content/discussion/page.tsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -38,17 +37,17 @@ const Discussion = () => {
   };
 
   return (
-    <div className="p-6 bg-white shadow-md rounded-lg ">
-      <h1 className="text-xl font-semibold mb-4">Discussion</h1>
+    <div className="p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg">
+      <h1 className="text-xl font-semibold mb-4 text-black dark:text-white">Discussion</h1>
 
       {/* Liste des messages */}
       <div className="space-y-4 mb-6">
         {messages.map((message) => (
-          <div key={message.id} className="p-4 bg-gray-100 rounded-lg">
-            <p className="text-sm text-gray-600">
+          <div key={message.id} className="p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               <strong>{message.author}</strong> - {new Date(message.timestamp).toLocaleString()}
             </p>
-            <p className="text-md">{message.content}</p>
+            <p className="text-md text-black dark:text-white">{message.content}</p>
           </div>
         ))}
       </div>
@@ -60,18 +59,18 @@ const Discussion = () => {
           value={author}
           onChange={(e) => setAuthor(e.target.value)}
           placeholder="Votre nom (facultatif)"
-          className="w-full p-2 border rounded-md mb-2"
+          className="w-full p-2 border rounded-md mb-2 bg-white dark:bg-gray-700 dark:border-gray-600 text-black dark:text-white"
         />
         <textarea
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Tapez votre message..."
-          className="w-full p-3 border rounded-md"
+          className="w-full p-3 border rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 text-black dark:text-white"
           rows={3}
         ></textarea>
         <button
           onClick={handleSendMessage}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors dark:bg-blue-700 dark:hover:bg-blue-600"
         >
           Envoyer
         </button>

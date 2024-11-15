@@ -159,12 +159,15 @@ const Favoris: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-white dark:bg-gray-900 text-black dark:text-white min-h-screen">
       <main className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Main Content - Feed d'articles */}
           {articles.map(article => (
-            <div key={article.id}>
+            <div
+              key={article.id}
+             
+            >
               <FaroritedArticle
                 article={article}
                 liked={articleStates[article.id]?.liked}
@@ -206,6 +209,7 @@ const Favoris: React.FC = () => {
         />
       )}
     </div>
+
   );
 };
 

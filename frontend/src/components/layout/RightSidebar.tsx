@@ -1,4 +1,3 @@
-// src/components/layout/RightSidebar.tsx
 "use client";
 import { AiFillFire, AiOutlineCode, AiOutlineMobile, AiOutlineRobot, AiOutlineCloud } from 'react-icons/ai';
 import { useState } from 'react';
@@ -21,9 +20,9 @@ export default function RightSidebar() {
   const [selectedCategory, setSelectedCategory] = useState<string>('Tendances');
 
   return (
-    <aside className="p-4 bg-white shadow-md rounded-lg space-y-6 sticky top-24">
+    <aside className="border p-4 bg-white dark:bg-gray-800 shadow-md rounded-lg space-y-6 sticky top-24">
       <div>
-        <h2 className="text-lg font-semibold mb-4">Explorer</h2>
+        <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Explorer</h2>
         <div className="space-y-1">
           {categories.map((category) => {
             const Icon = category.icon;
@@ -31,8 +30,10 @@ export default function RightSidebar() {
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.label)}
-                className={`flex items-center gap-3 p-2 rounded-lg transition-color w-full ${
-                  selectedCategory === category.label ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100'
+                className={`flex items-center gap-3 p-2 rounded-lg transition-colors w-full ${
+                  selectedCategory === category.label
+                    ? 'bg-blue-50 text-blue-600 dark:bg-blue-600 dark:text-white'
+                    : 'hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300'
                 }`}
               >
                 <Icon size={18} />
@@ -44,17 +45,19 @@ export default function RightSidebar() {
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold mb-4">Formations</h2>
+        <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Formations</h2>
         <div className="space-y-2">
           {formations.map((formation) => (
             <div
               key={formation.id}
-              className="p-3 rounded-lg bg-white border border-gray-200 cursor-pointer hover:border-blue-300 transition-colors"
+              className="p-3 rounded-lg bg-white border border-gray-200 cursor-pointer hover:border-blue-300 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:hover:border-blue-500"
             >
-              <h3 className="text-sm font-medium">{formation.title}</h3>
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white">{formation.title}</h3>
             </div>
           ))}
-          <button className="w-full text-blue-600 text-sm font-medium mt-2 hover:underline">Voir plus</button>
+          <button className="w-full text-blue-600 text-sm font-medium mt-2 hover:underline dark:text-blue-400">
+            Voir plus
+          </button>
         </div>
       </div>
     </aside>
