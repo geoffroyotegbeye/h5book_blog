@@ -99,7 +99,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
   const readingTime = calculateReadingTime(article.content);
 
   return (
-    <div className="bg-white border dark:bg-gray-800 dark:text-gray-200 rounded-lg shadow p-4 mb-6 hover:shadow-lg transition-shadow">
+    <div className="bg-white border dark:bg-gray-800 dark:text-gray-200 rounded-lg shadow p-4 mb-6 hover:shadow-lg transition-shadow w-fit">
       <div className="cursor-pointer" onClick={() => onOpenArticle(article)}>
         {/* Affichage de la catégorie en haut */}
         <div className="text-sm text-white bg-blue-600 px-2 py-1 rounded mb-2 inline-block">

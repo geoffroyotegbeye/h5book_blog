@@ -196,7 +196,7 @@ const Home: React.FC = () => {
         <div className="grid grid-cols-9 gap-6">
               {/* Main Content - Feed d'articles */}
           <div className="bordercol-span-12 md:col-span-6 lg:col-span-6">
-            <div className=''>
+            <div className='w-fit'>
               {articles.map(article => (
                 <div 
                   key={article.id}
