@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 Int            @id @default(autoincrement())
+  uuid               String         @unique @default(uuid())
+  name               String
+  email              String         @unique
+  bio                String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  hashedRefreshToken String?
+  password           String?
+  role               Role           @default(USER)
+  avatar             String?
+  comments           Comment[]
+  likes             Like[]
+  posts             Post[]
+  profile           Profile?
+  subscriptions     Subscription[]
+  userGroups        UserGroup[]
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid())
+  content   String
+  postId    String
+  authorId  String
+  parentId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  author    User     @relation(fields: [authorId], references: [uuid])
+  post      Post     @relation(fields: [postId], references: [uuid])
+  parent    Comment? @relation("CommentToComment", fields: [parentId], references: [uuid])
+  replies   Comment[] @relation("CommentToComment")
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [uuid])
+  post      Post     @relation(fields: [postId], references: [uuid])
+}
+
+model Post {
+  id         Int       @id @default(autoincrement())
+  uuid       String    @unique @default(uuid())
+  title      String
+  content    String
+  published  Boolean   @default(false)
+  authorId   String
+  groupId    String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  thumbnail  String?
+  slug       String?   @unique
+  categoryId String?
+  author     User      @relation(fields: [authorId], references: [uuid])
+  group      Group?    @relation(fields: [groupId], references: [uuid])
+  category   Category? @relation(fields: [categoryId], references: [uuid])
+  comments   Comment[]
+  likes      Like[]
+  media      Media[]
+  tags       PostTag[]
+}
+
+model Tag {
+  id      Int       @id @default(autoincrement())
+  uuid    String    @unique @default(uuid())
+  name    String    @unique
+  posts   PostTag[]
+}
+
+model PostTag {
+  postId String
+  tagId  String
+  post   Post    @relation(fields: [postId], references: [uuid])
+  tag    Tag     @relation(fields: [tagId], references: [uuid])
+
+  @@id([postId, tagId])
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  posts     Post[]
+}
+
+model Media {
+  id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid())
+  url       String
+  type      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  postId    String?
+  post      Post?    @relation(fields: [postId], references: [uuid])
+}
+
+model Subscription {
+  id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid())
+  userId    String
+  email     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [uuid])
+}
+
+model Profile {
+  id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid())
+  userId    String   @unique
+  bio       String?
+  location  String?
+  website   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [uuid])
+}
+
+model Group {
+  id         Int         @id @default(autoincrement())
+  uuid       String      @unique @default(uuid())
+  name       String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  posts      Post[]
+  userGroups UserGroup[]
+}
+
+model UserGroup {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  groupId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [uuid])
+  group     Group    @relation(fields: [groupId], references: [uuid])
+
+  @@unique([userId, groupId])
+}
+
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}
