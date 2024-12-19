@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { TypeOrmModule } from "@nestjs/typeorm";
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthenticationModule } from './modules/authentication/authentication.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: [
-        '.env.development.local',
-        '.env.development.test',
-        '.env.development',
+        '.env.local',
+        '.env.test',
+        '.env.production',
       ],
       isGlobal: true,
     }),
@@ -28,8 +28,10 @@ import { TypeOrmModule } from "@nestjs/typeorm";
         synchronize: true,
       }),
     }),
+    AuthenticationModule,
+    UserModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
