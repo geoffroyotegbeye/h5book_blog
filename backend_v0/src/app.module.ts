@@ -1,17 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthenticationModule } from './modules/authentication/authentication.module';
-import { UserModule } from './modules/user/user.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: [
-        '.env.local',
-        '.env.test',
-        '.env.production',
-      ],
+      envFilePath: ['.env.local', '.env.test', '.env.production'],
       isGlobal: true,
     }),
     TypeOrmModule.forRootAsync({
@@ -26,9 +21,11 @@ import { UserModule } from './modules/user/user.module';
         database: configService.get<string>('DB_DATABASE'),
         autoLoadEntities: true,
         synchronize: true,
+        migrations: [__dirname + '/src/migrations/*{.ts,.js}'],
+        entities: [__dirname + '/src/entities/{.ts,.js}'],
+        migrationsRun: false,
       }),
     }),
-    AuthenticationModule,
     UserModule,
   ],
   controllers: [],
