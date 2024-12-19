@@ -16,6 +16,7 @@ const comments_module_1 = require("./comments/comments.module");
 const categories_module_1 = require("./categories/categories.module");
 const tags_module_1 = require("./tags/tags.module");
 const prisma_module_1 = require("./prisma/prisma.module");
+const database_module_1 = require("./database/database.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -30,6 +31,7 @@ exports.AppModule = AppModule = __decorate([
             comments_module_1.CommentsModule,
             categories_module_1.CategoriesModule,
             tags_module_1.TagsModule,
+            database_module_1.DatabaseModule
         ],
     })
 ], AppModule);

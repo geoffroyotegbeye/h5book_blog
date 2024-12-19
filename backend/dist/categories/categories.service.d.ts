@@ -5,67 +5,67 @@ export declare class CategoriesService {
     private prisma;
     constructor(prisma: PrismaService);
     create(createCategoryDto: CreateCategoryDto): Promise<{
-        name: string;
         id: number;
         uuid: string;
+        name: string;
         createdAt: Date;
         updatedAt: Date;
     }>;
     findAll(): Promise<({
         posts: {
-            title: string;
             id: number;
             uuid: string;
-            createdAt: Date;
-            updatedAt: Date;
+            title: string;
             content: string;
             published: boolean;
-            groupId: string | null;
-            categoryId: string | null;
-            thumbnail: string | null;
             authorId: string;
+            groupId: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            thumbnail: string | null;
             slug: string | null;
+            categoryId: string | null;
         }[];
     } & {
-        name: string;
         id: number;
         uuid: string;
+        name: string;
         createdAt: Date;
         updatedAt: Date;
     })[]>;
     findOne(uuid: string): Promise<{
         posts: {
-            title: string;
             id: number;
             uuid: string;
-            createdAt: Date;
-            updatedAt: Date;
+            title: string;
             content: string;
             published: boolean;
-            groupId: string | null;
-            categoryId: string | null;
-            thumbnail: string | null;
             authorId: string;
+            groupId: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            thumbnail: string | null;
             slug: string | null;
+            categoryId: string | null;
         }[];
     } & {
-        name: string;
         id: number;
         uuid: string;
+        name: string;
         createdAt: Date;
         updatedAt: Date;
     }>;
     update(uuid: string, updateCategoryDto: UpdateCategoryDto): Promise<{
-        name: string;
         id: number;
         uuid: string;
+        name: string;
         createdAt: Date;
         updatedAt: Date;
     }>;
     remove(uuid: string): Promise<{
-        name: string;
         id: number;
         uuid: string;
+        name: string;
         createdAt: Date;
         updatedAt: Date;
     }>;

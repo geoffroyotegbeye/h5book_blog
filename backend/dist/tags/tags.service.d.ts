@@ -5,68 +5,68 @@ export declare class TagsService {
     private prisma;
     constructor(prisma: PrismaService);
     create(createTagDto: CreateTagDto): Promise<{
-        name: string;
         id: number;
         uuid: string;
+        name: string;
     }>;
     findAll(): Promise<({
         posts: ({
             post: {
-                title: string;
                 id: number;
                 uuid: string;
-                createdAt: Date;
-                updatedAt: Date;
+                title: string;
                 content: string;
                 published: boolean;
-                groupId: string | null;
-                categoryId: string | null;
-                thumbnail: string | null;
                 authorId: string;
+                groupId: string | null;
+                createdAt: Date;
+                updatedAt: Date;
+                thumbnail: string | null;
                 slug: string | null;
+                categoryId: string | null;
             };
         } & {
             postId: string;
             tagId: string;
         })[];
     } & {
-        name: string;
         id: number;
         uuid: string;
+        name: string;
     })[]>;
     findOne(uuid: string): Promise<{
         posts: ({
             post: {
-                title: string;
                 id: number;
                 uuid: string;
-                createdAt: Date;
-                updatedAt: Date;
+                title: string;
                 content: string;
                 published: boolean;
-                groupId: string | null;
-                categoryId: string | null;
-                thumbnail: string | null;
                 authorId: string;
+                groupId: string | null;
+                createdAt: Date;
+                updatedAt: Date;
+                thumbnail: string | null;
                 slug: string | null;
+                categoryId: string | null;
             };
         } & {
             postId: string;
             tagId: string;
         })[];
     } & {
-        name: string;
         id: number;
         uuid: string;
+        name: string;
     }>;
     update(uuid: string, updateTagDto: UpdateTagDto): Promise<{
-        name: string;
         id: number;
         uuid: string;
+        name: string;
     }>;
     remove(uuid: string): Promise<{
-        name: string;
         id: number;
         uuid: string;
+        name: string;
     }>;
 }

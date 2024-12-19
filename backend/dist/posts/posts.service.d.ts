@@ -8,9 +8,9 @@ export declare class PostsService {
         author: {
             id: number;
             uuid: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             email: string;
             bio: string | null;
             hashedRefreshToken: string | null;
@@ -21,9 +21,9 @@ export declare class PostsService {
         category: {
             id: number;
             uuid: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
         };
         tags: {
             postId: string;
@@ -47,9 +47,9 @@ export declare class PostsService {
         author: {
             id: number;
             uuid: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             email: string;
             bio: string | null;
             hashedRefreshToken: string | null;
@@ -60,9 +60,9 @@ export declare class PostsService {
         category: {
             id: number;
             uuid: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
         };
         tags: {
             postId: string;
@@ -86,9 +86,9 @@ export declare class PostsService {
         author: {
             id: number;
             uuid: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             email: string;
             bio: string | null;
             hashedRefreshToken: string | null;
@@ -99,17 +99,17 @@ export declare class PostsService {
         category: {
             id: number;
             uuid: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
         };
         comments: ({
             author: {
                 id: number;
                 uuid: string;
+                name: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 email: string;
                 bio: string | null;
                 hashedRefreshToken: string | null;
@@ -120,11 +120,11 @@ export declare class PostsService {
         } & {
             id: number;
             uuid: string;
+            postId: string;
             content: string;
             authorId: string;
             createdAt: Date;
             updatedAt: Date;
-            postId: string;
             parentId: string | null;
         })[];
         tags: {
@@ -149,9 +149,9 @@ export declare class PostsService {
         author: {
             id: number;
             uuid: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             email: string;
             bio: string | null;
             hashedRefreshToken: string | null;
@@ -162,9 +162,9 @@ export declare class PostsService {
         category: {
             id: number;
             uuid: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
         };
         tags: {
             postId: string;

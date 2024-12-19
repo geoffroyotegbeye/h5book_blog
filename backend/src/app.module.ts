@@ -7,6 +7,9 @@ import { CommentsModule } from './comments/comments.module';
 import { CategoriesModule } from './categories/categories.module';
 import { TagsModule } from './tags/tags.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DatabaseModule } from './database/database.module';
+import * as process from 'node:process';
 
 @Module({
   imports: [
@@ -18,6 +21,7 @@ import { PrismaModule } from './prisma/prisma.module';
     CommentsModule,
     CategoriesModule,
     TagsModule,
+    DatabaseModule
   ],
 })
 export class AppModule {}
