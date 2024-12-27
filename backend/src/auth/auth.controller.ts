@@ -18,12 +18,13 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async authenticateUser(@Request() request) {
+  async getAuthenticateUser(@Request() request: RequestWithUser) {
     return this.userService.getUser(request.user.userId);
   }
 
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {
+    console.log('hello', registerDto)
     return await this.authService.register({registerDto});
   }
 }

@@ -4,11 +4,12 @@ import { RegisterDto } from "./dto/register.dto";
 import { PrismaService } from "../prisma.service";
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { MailerService } from '../mailer/mailer.service';
 import * as types from  './jwt/jwt.strategy';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService, private readonly jwtService: JwtService) {}
+  constructor(private readonly prisma: PrismaService, private readonly jwtService: JwtService, private readonly mailerService: MailerService) {}
 
   async register({ registerDto }: { registerDto: RegisterDto }) {
     const existingUser = await this.prisma.user.findUnique({
@@ -28,35 +29,46 @@ export class AuthService {
         firstName: registerDto.firstName,
         lastName: registerDto.lastName,
         password: hashPassword,
+        isActivated: false,
+        role: 'USER',
       }
     });
+
+    this.mailerService.sendCreatedAccountEmail({ recipient: registerDto.email, firstname: registerDto.firstName});
 
     return await this.authenticateUser( {userId: createdUser.uuid} );
   }
 
   async login({ loginDto }: { loginDto: LoginDto }) {
-    const { email, password } = loginDto;
+    try {
+      const { email, password } = loginDto;
 
-    const existingUser = await this.prisma.user.findUnique({
-      where: {
-        email: email,
-      },
-    });
+      const existingUser = await this.prisma.user.findUnique({
+        where: {
+          email: email,
+        },
+      });
 
-    if (!existingUser) {
-      throw new HttpException('Invalid credentials', HttpStatus.BAD_REQUEST);
+      if (!existingUser) {
+        throw new HttpException('Invalid credentials', HttpStatus.BAD_REQUEST);
+      }
+
+      const hashedPassword = existingUser.password;
+
+      const isPasswordValid = await this.isPasswordValid({ password, hashedPassword });
+
+      if (!isPasswordValid) {
+        throw new HttpException('Invalid credentials', HttpStatus.BAD_REQUEST);
+      }
+
+      const { password: _, ...userWithoutPassword } = existingUser;
+      return await this.authenticateUser( {userId: userWithoutPassword.uuid} );
+    } catch (error) {
+      return {
+        error: true,
+         message: error.message,
+      }
     }
-
-    const hashedPassword = existingUser.password;
-
-    const isPasswordValid = await this.isPasswordValid({ password, hashedPassword });
-
-    if (!isPasswordValid) {
-      throw new HttpException('Invalid credentials', HttpStatus.BAD_REQUEST);
-    }
-
-    const { password: _, ...userWithoutPassword } = existingUser;
-    return await this.authenticateUser( {userId: userWithoutPassword.uuid} );
   }
 
   private async hashPassword({ password }: { password: string }) {
