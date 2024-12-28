@@ -103,4 +103,59 @@ export class MailerService {
             };
         }
     }
+    async sendPasswordResetEmail({
+                                     recipient,
+                                     firstname,
+                                     resetPasswordToken,
+                                 }: {
+        recipient: string;
+        firstname: string;
+        resetPasswordToken: string;
+    }) {
+        try {
+            const resetPasswordUrl = `https://localhost:4000/reset-password?token=${resetPasswordToken}`;
+
+            const { data, error } = await this.mailer.emails.send({
+                from: 'onboarding@resend.dev',
+                // to: [recipient],
+                to: ['warrisagbannonde@outlook.com'],
+                subject: '🔑 Réinitialisation de votre mot de passe - H5Book Blog',
+                html: `
+                <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                    <h1 style="color: #4CAF50; text-align: center;">Réinitialisation de votre mot de passe</h1>
+                    <p>Bonjour ${firstname},</p>
+                    <p>Nous avons reçu une demande de réinitialisation de votre mot de passe sur <strong>H5Book Blog</strong>.</p>
+                    <p>Pour réinitialiser votre mot de passe, veuillez cliquer sur le lien ci-dessous :</p>
+                    <p style="text-align: center;">
+                        <a href="${resetPasswordUrl}" style="color: #4CAF50; font-size: 1.2em;">Réinitialiser mon mot de passe</a>
+                    </p>
+                    <p>Ce lien est valable pendant 24 heures. Si vous n'avez pas demandé de réinitialisation de mot de passe, veuillez ignorer cet email.</p>
+                    <p>Si vous avez des questions ou besoin d’assistance, n’hésitez pas à nous contacter à <a href="mailto:h5bookblog@gmail.com" style="color: #4CAF50;">h5bookblog@gmail.com</a>.</p>
+                    <p style="font-weight: bold;">- L'équipe H5Book Blog</p>
+                    <hr style="border: none; border-top: 1px solid #ddd;" />
+                    <footer style="text-align: center; font-size: 0.9em; color: #888;">
+                        <p>Vous recevez cet email car vous avez demandé une réinitialisation de mot de passe sur H5Book Blog.</p>
+                        <p>Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer cet email.</p>
+                    </footer>
+                </div>
+            `,
+            });
+
+            if (error) {
+                return {
+                    error: true,
+                    message: error.message,
+                };
+            }
+
+            console.log({ data });
+        } catch (error) {
+            return {
+                error: true,
+                message: error.message,
+            };
+        }
+    }
+
+
 }

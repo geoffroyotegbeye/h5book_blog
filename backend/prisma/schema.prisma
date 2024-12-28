@@ -13,14 +13,20 @@ model User {
   firstName               String
   lastName                String
   password                String
-  role                    String    @default("USER")
   profileUrl              String?
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
   isResettingPassword     Boolean   @default(false)
-  resetPasswordToken      String?
+  resetPasswordToken      String?   @unique
   activationCode          String?
   activationCodeExpiredAt DateTime?
   isActivated             Boolean   @default(false)
   activatedAt             DateTime?
+  roles                   Role[]   @relation("UserRoles")
+}
+
+model Role {
+  uuid    String  @id @default(cuid())
+  name  String  @unique
+  users User[]  @relation("UserRoles")
 }

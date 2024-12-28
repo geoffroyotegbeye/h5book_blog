@@ -2,6 +2,7 @@ import {Body, HttpException, HttpStatus, Injectable, Post} from "@nestjs/common"
 import {LoginDto} from "./dto/login.dto";
 import {RegisterDto} from "./dto/register.dto";
 import {ActivateAccountDto} from "./dto/activate-account.dto";
+import { ResetPasswordDto } from "./dto/reset-password.dto";
 import {PrismaService} from "../prisma.service";
 import * as bcrypt from 'bcrypt';
 import {JwtService} from '@nestjs/jwt';
@@ -15,45 +16,63 @@ export class AuthService {
     }
 
     async register({registerDto}: { registerDto: RegisterDto }) {
-        const existingUser = await this.prisma.user.findUnique({
-            where: {
-                email: registerDto.email,
-            },
-        });
+        try {
+            const existingUser = await this.prisma.user.findUnique({
+                where: {
+                    email: registerDto.email,
+                },
+            });
 
-        if (existingUser) {
-            throw new HttpException('Existing email address', HttpStatus.BAD_REQUEST);
-        }
+            const userRole = await this.prisma.role.findUnique({
+                where: {
+                    name: 'USER',
+                },
+            });
 
-        const hashPassword = await this.hashPassword({password: registerDto.password});
-        const activationCode = Math.random().toString(36).substring(2, 7);
-        const activationCodeExpiredAt = new Date(Date.now() + 5 * 60 * 1000);
-        const createdUser = await this.prisma.user.create({
-            data: {
-                email: registerDto.email,
-                firstName: registerDto.firstName,
-                lastName: registerDto.lastName,
-                password: hashPassword,
-                isActivated: false,
-                role: 'USER',
-                activationCode: activationCode,
-                activationCodeExpiredAt: activationCodeExpiredAt,
+            if (existingUser) {
+                throw new HttpException('Existing email address', HttpStatus.BAD_REQUEST);
             }
-        });
 
-        await this.mailerService.sendCreatedAccountEmail({
-            recipient: createdUser.email,
-            firstname: createdUser.firstName
-        });
-        await this.sendActivationCode({
-            recipient: createdUser.email,
-            firstname: createdUser.firstName,
-            activationCode: activationCode
-        });
-        return {
-            error: false,
-            message: 'Compte créé avec succès.'
-        };
+            const hashPassword = await this.hashPassword({password: registerDto.password});
+            const activationCode = Math.random().toString(36).substring(2, 7);
+            const activationCodeExpiredAt = new Date(Date.now() + 5 * 60 * 1000);
+
+            const createdUser = await this.prisma.user.create({
+                data: {
+                    email: registerDto.email,
+                    firstName: registerDto.firstName,
+                    lastName: registerDto.lastName,
+                    password: hashPassword,
+                    isActivated: false,
+                    roles: {
+                        connect: {
+                            uuid: userRole.uuid,
+                        }
+                    },
+                    activationCode: activationCode,
+                    activationCodeExpiredAt: activationCodeExpiredAt,
+                }
+            });
+
+            await this.mailerService.sendCreatedAccountEmail({
+                recipient: createdUser.email,
+                firstname: createdUser.firstName
+            });
+            await this.sendActivationCode({
+                recipient: createdUser.email,
+                firstname: createdUser.firstName,
+                activationCode: activationCode
+            });
+            return {
+                error: false,
+                message: 'Compte créé avec succès.'
+            };
+        } catch (error) {
+            return  {
+                error: true,
+                message: error.message
+            }
+        }
     }
 
     async login({loginDto}: { loginDto: LoginDto }) {
@@ -88,40 +107,6 @@ export class AuthService {
         }
     }
 
-    async resetUserPasswordRequest({userId}: { userId: string }) {
-        try {
-
-            const existingUser = await this.prisma.user.findUnique({
-                where: {
-                    uuid: userId,
-                },
-            });
-
-            if (!existingUser) {
-                throw new HttpException('Invalid credentials', HttpStatus.BAD_REQUEST);
-            }
-
-            const createdId = createId();
-
-            await this.prisma.user.update({
-                where: {
-                    uuid: userId,
-                },
-                data: {
-                    isResettingPassword: true,
-                    resetPasswordToken: createdId,
-                },
-            });
-
-            return await this.authenticateUser({userId: existingUser.uuid});
-        } catch (error) {
-            return {
-                error: true,
-                message: error.message,
-            }
-        }
-    }
-
     async activateAccount(activateAccountDto: ActivateAccountDto) {
         const {email, activationCode} = activateAccountDto;
 
@@ -147,6 +132,115 @@ export class AuthService {
         });
 
         return this.authenticateUser({userId: user.uuid});
+    }
+
+    async resetUserPasswordRequest({email}: { email: string }) {
+        try {
+
+            const existingUser = await this.prisma.user.findUnique({
+                where: {
+                    email: email,
+                },
+            });
+
+            if (!existingUser) {
+                throw new HttpException('Adresse mail invalide.', HttpStatus.BAD_REQUEST);
+            }
+
+            if (existingUser.isResettingPassword) {
+                throw new HttpException('Une demande de réinitialisation est déjà en cours.', HttpStatus.BAD_REQUEST);
+            }
+
+            const createdId = createId();
+
+            await this.prisma.user.update({
+                where: {
+                    uuid: existingUser.uuid,
+                },
+                data: {
+                    isResettingPassword: true,
+                    resetPasswordToken: createdId,
+                },
+            });
+
+            await this.mailerService.sendPasswordResetEmail({recipient: existingUser.email, firstname: existingUser.firstName, resetPasswordToken: createdId})
+            return {
+                error: false,
+                message: 'Lien de réinitialisation envoyé avec succès.',
+            }
+        } catch (error) {
+            return {
+                error: true,
+                message: error.message,
+            }
+        }
+    }
+
+    async verifiedResetPasswordToken({token}: { token: string }) {
+        try {
+
+            const existingUser = await this.prisma.user.findUnique({
+                where: {
+                    resetPasswordToken: token,
+                },
+            });
+
+            if (!existingUser) {
+                throw new HttpException('Token invalide.', HttpStatus.BAD_REQUEST);
+            }
+
+            if (!existingUser.isResettingPassword) {
+                throw new HttpException("Aucune demande de réinitialisation de mot de mot de passe n'est en cours.", HttpStatus.BAD_REQUEST);
+            }
+
+            return {
+                error: false,
+                message: 'Le token est valide et peut être utilisé.',
+                token: existingUser.resetPasswordToken,
+            }
+        } catch (error) {
+            return {
+                error: true,
+                message: error.message,
+            }
+        }
+    }
+
+    async resetUserPassword(resetPasswordDto: ResetPasswordDto) {
+        try {
+            const existingUser = await this.prisma.user.findUnique({
+                where: {
+                    resetPasswordToken: resetPasswordDto.token,
+                },
+            });
+
+            if (!existingUser) {
+                throw new HttpException("Utilisateur n'existe pas.", HttpStatus.BAD_REQUEST);
+            }
+
+            const hashPassword = await this.hashPassword({password: resetPasswordDto.password});
+
+            await this.prisma.user.update({
+                where: {
+                  uuid: existingUser.uuid
+                },
+                data: {
+                    password: hashPassword,
+                    isResettingPassword: false,
+                    resetPasswordToken: null,
+                }
+            });
+
+            return {
+                error: false,
+                message: 'Mot de passe réinitialisé avec succès.'
+            };
+        } catch (error) {
+            return  {
+                error: true,
+                message: error.message
+            }
+        }
     }
 
 
