@@ -17,7 +17,6 @@ async function bootstrap() {
         .setTitle('H5Book Blog API')
         .setDescription('API pour la gestion de H5Book Blog')
         .setVersion('1.0')
-        .addTag('authentication', 'Authentification et sécurité')
         .build();
     const documentFactory = () => SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api', app, documentFactory);
