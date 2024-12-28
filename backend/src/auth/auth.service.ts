@@ -17,7 +17,6 @@ export class AuthService {
 
     async register({registerDto}: { registerDto: RegisterDto }) {
         try {
-            console.log('hello', registerDto);
             const existingUser = await this.prisma.user.findUnique({
                 where: {
                     email: registerDto.email,
@@ -30,13 +29,16 @@ export class AuthService {
                 },
             });
 
+            if (!userRole) {
+                throw new HttpException('Role does not exist.', HttpStatus.BAD_REQUEST);
+            }
+
+
             if (existingUser) {
                 throw new HttpException('Existing email address', HttpStatus.BAD_REQUEST);
             }
 
             const hashPassword = await this.hashPassword({password: registerDto.password});
-            const activationCode = Math.random().toString(36).substring(2, 7);
-            const activationCodeExpiredAt = new Date(Date.now() + 5 * 60 * 1000);
 
             const createdUser = await this.prisma.user.create({
                 data: {
@@ -50,19 +52,12 @@ export class AuthService {
                             uuid: userRole?.uuid,
                         }
                     },
-                    activationCode: activationCode,
-                    activationCodeExpiredAt: activationCodeExpiredAt,
                 }
             });
 
             await this.mailerService.sendCreatedAccountEmail({
                 recipient: createdUser.email,
                 firstname: createdUser.firstName
-            });
-            await this.sendActivationCode({
-                recipient: createdUser.email,
-                firstname: createdUser.firstName,
-                activationCode: activationCode
             });
             return {
                 error: false,
@@ -111,7 +106,7 @@ export class AuthService {
         }
     }
 
-    async refreshAccessToken({refreshToken} : {refreshToken: string}) {
+    async refreshAccessToken({refreshToken}: { refreshToken: string }) {
         try {
             const decoded = this.jwtService.verify(refreshToken, {secret: process.env.JWT_REFRESH_SECRET});
             const user = await this.prisma.user.findUnique({
@@ -130,6 +125,49 @@ export class AuthService {
                 error: true,
                 message: error.message
             }
+        }
+    }
+
+    async sendActivateAccountCode({email}: { email: string }) {
+
+        try {
+            const existingUser = await this.prisma.user.findUnique({where: {email}});
+            if (!existingUser) {
+                throw new HttpException("Utilisateur introuvable.", HttpStatus.BAD_REQUEST);
+            }
+
+            if (existingUser.isActivated) {
+                throw new HttpException("Votre compte est déjà activé.", HttpStatus.BAD_REQUEST)
+            }
+
+            const activationCode = Math.random().toString(36).substring(2, 7);
+            const activationCodeExpiredAt = new Date(Date.now() + 5 * 60 * 1000);
+
+            await this.prisma.user.update({
+                where: {
+                    uuid: existingUser.uuid,
+                },
+                data: {
+                    activationCode: activationCode,
+                    activationCodeExpiredAt: activationCodeExpiredAt,
+                }
+            });
+
+            await this.sendActivationCode({
+                recipient: existingUser.email,
+                firstname: existingUser.firstName,
+                activationCode: activationCode
+            });
+
+            return {
+                error: false,
+                message: "Code d'activation envoyé avec succès."
+            };
+        } catch (error) {
+            return {
+                error: true,
+                message: error.message,
+            };
         }
     }
 

@@ -22,11 +22,51 @@ model User {
   activationCodeExpiredAt DateTime?
   isActivated             Boolean   @default(false)
   activatedAt             DateTime?
-  roles                   Role[]   @relation("UserRoles")
+  roles                   Role[]    @relation("UserRoles")
+  createdArticles         Article[] @relation("UserArticles")
+  createdTags             Tag[]     @relation("UserTags")
+
+  @@map("users")
 }
 
 model Role {
   uuid    String  @id @default(cuid())
-  name  String  @unique
-  users User[]  @relation("UserRoles")
+  name    String  @unique
+  users   User[]  @relation("UserRoles")
+
+  @@map("roles")
+}
+
+model Article {
+  uuid        String   @id @default(cuid())
+  title       String
+  author      String
+  source      String?
+  category    String?
+  summary     String?
+  content     String
+  likes       Int      @default(0)
+  comments    Int      @default(0)
+  time        DateTime @default(now())
+  image       String?
+  favorite    Boolean  @default(false)
+  tags        Tag[]    @relation("ArticleTags")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String
+  createdBy   User     @relation("UserArticles", fields: [createdById], references: [uuid])
+
+  @@map("articles")
+}
+
+model Tag {
+  uuid        String    @id @default(cuid())
+  name        String    @unique
+  articles    Article[] @relation("ArticleTags")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById String
+  createdBy   User      @relation("UserTags", fields: [createdById], references: [uuid])
+
+  @@map("tags")
 }

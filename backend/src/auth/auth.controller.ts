@@ -53,4 +53,9 @@ export class AuthController {
   async resetUserPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return await this.authService.resetUserPassword(resetPasswordDto);
   }
+
+  @Post('send-activate-code')
+  async sendActivateAccountCode(@Body() email: string) {
+    return await this.authService.sendActivateAccountCode({email});
+  }
 }
