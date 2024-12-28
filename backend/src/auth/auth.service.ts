@@ -2,7 +2,7 @@ import {Body, HttpException, HttpStatus, Injectable, Post} from "@nestjs/common"
 import {LoginDto} from "./dto/login.dto";
 import {RegisterDto} from "./dto/register.dto";
 import {ActivateAccountDto} from "./dto/activate-account.dto";
-import { ResetPasswordDto } from "./dto/reset-password.dto";
+import {ResetPasswordDto} from "./dto/reset-password.dto";
 import {PrismaService} from "../prisma.service";
 import * as bcrypt from 'bcrypt';
 import {JwtService} from '@nestjs/jwt';
@@ -17,6 +17,7 @@ export class AuthService {
 
     async register({registerDto}: { registerDto: RegisterDto }) {
         try {
+            console.log('hello', registerDto);
             const existingUser = await this.prisma.user.findUnique({
                 where: {
                     email: registerDto.email,
@@ -46,7 +47,7 @@ export class AuthService {
                     isActivated: false,
                     roles: {
                         connect: {
-                            uuid: userRole.uuid,
+                            uuid: userRole?.uuid,
                         }
                     },
                     activationCode: activationCode,
@@ -68,7 +69,7 @@ export class AuthService {
                 message: 'Compte créé avec succès.'
             };
         } catch (error) {
-            return  {
+            return {
                 error: true,
                 message: error.message
             }
@@ -98,11 +99,36 @@ export class AuthService {
             }
 
             const {password: _, ...userWithoutPassword} = existingUser;
-            return await this.authenticateUser({userId: userWithoutPassword.uuid});
+            const accessToken = await this.generateAccessToken({userId: userWithoutPassword.uuid});
+            const refreshToken = await this.generateRefreshToken({userId: userWithoutPassword.uuid});
+
+            return {accessToken, refreshToken};
         } catch (error) {
             return {
                 error: true,
                 message: error.message,
+            }
+        }
+    }
+
+    async refreshAccessToken({refreshToken} : {refreshToken: string}) {
+        try {
+            const decoded = this.jwtService.verify(refreshToken, {secret: process.env.JWT_REFRESH_SECRET});
+            const user = await this.prisma.user.findUnique({
+                where: {
+                    uuid: decoded.userId,
+                }
+            });
+            if (!user) {
+                throw new Error('User not found');
+            }
+
+            const newAccessToken = await this.generateAccessToken({userId: user.uuid});
+            return {accessToken: newAccessToken};
+        } catch (error) {
+            return {
+                error: true,
+                message: error.message
             }
         }
     }
@@ -131,7 +157,7 @@ export class AuthService {
             },
         });
 
-        return this.authenticateUser({userId: user.uuid});
+        return this.generateAccessToken({userId: user.uuid});
     }
 
     async resetUserPasswordRequest({email}: { email: string }) {
@@ -163,7 +189,11 @@ export class AuthService {
                 },
             });
 
-            await this.mailerService.sendPasswordResetEmail({recipient: existingUser.email, firstname: existingUser.firstName, resetPasswordToken: createdId})
+            await this.mailerService.sendPasswordResetEmail({
+                recipient: existingUser.email,
+                firstname: existingUser.firstName,
+                resetPasswordToken: createdId
+            })
             return {
                 error: false,
                 message: 'Lien de réinitialisation envoyé avec succès.',
@@ -226,7 +256,7 @@ export class AuthService {
 
             await this.prisma.user.update({
                 where: {
-                  uuid: existingUser.uuid
+                    uuid: existingUser.uuid
                 },
                 data: {
                     password: hashPassword,
@@ -240,7 +270,7 @@ export class AuthService {
                 message: 'Mot de passe réinitialisé avec succès.'
             };
         } catch (error) {
-            return  {
+            return {
                 error: true,
                 message: error.message
             }
@@ -256,11 +286,14 @@ export class AuthService {
         return await bcrypt.compare(password, hashedPassword);
     }
 
-    private async authenticateUser({userId}: types.UserPayload) {
+    private async generateAccessToken({userId}: types.UserPayload) {
         const payload: types.UserPayload = {userId};
-        return {
-            access_token: await this.jwtService.signAsync(payload),
-        };
+        return await this.jwtService.signAsync(payload);
+    }
+
+    private async generateRefreshToken({userId}: { userId: string }) {
+        const payload = {userId: userId};
+        return this.jwtService.sign(payload, {secret: process.env.JWT_REFRESH_SECRET, expiresIn: '7d'});
     }
 
     private async sendActivationCode({recipient, firstname, activationCode}: {
@@ -271,20 +304,20 @@ export class AuthService {
         this.mailerService.sendActivationCodeEmail({recipient, firstname, activationCode});
     }
 
-    private async validateActivation({ user, activationCode }: { user: any, activationCode: string }) {
+    private async validateActivation({user, activationCode}: { user: any, activationCode: string }) {
         if (user.isActivated) {
-            return { error: true, message: "Le compte est déjà activé." };
+            return {error: true, message: "Le compte est déjà activé."};
         }
 
         if (user.activationCode !== activationCode) {
-            return { error: true, message: "Le code d'activation est incorrect." };
+            return {error: true, message: "Le code d'activation est incorrect."};
         }
 
         if (user.activationCodeExpiredAt && new Date(user.activationCodeExpiredAt).getTime() < Date.now()) {
-            return { error: true, message: "Le code d'activation a expiré." };
+            return {error: true, message: "Le code d'activation a expiré."};
         }
 
-        return { error: false, message: "Validation réussie." };
+        return {error: false, message: "Validation réussie."};
     }
 
 }

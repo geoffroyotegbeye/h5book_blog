@@ -18,6 +18,11 @@ export class AuthController {
     return await this.authService.login({loginDto});
   }
 
+  @Post('refresh-token')
+  async refreshToken(@Body() { refreshToken }: { refreshToken: string }) {
+    return await this.authService.refreshAccessToken({refreshToken});
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get()
   async getAuthenticateUser(@Request() request: RequestWithUser) {
