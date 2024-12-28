@@ -5,10 +5,12 @@ import {
   Matches,
   MinLength
 } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class ResetPasswordDto {
   @IsString()
   @IsNotEmpty()
+  @ApiProperty()
   token: string;
 
   @IsString()
@@ -18,5 +20,6 @@ export class ResetPasswordDto {
   @Matches(/(?=.*[A-Z])/, { message: 'Password must contain at least one uppercase letter.' })
   @Matches(/(?=.*\d)/, { message: 'Password must contain at least one number.' })
   @Matches(/(?=.*[@$!%*?&])/ , { message: 'Password must contain at least one special character.' })
+  @ApiProperty()
   password: string;
 }
