@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { ArticlesModule } from './articles/articles.module';
 import { ArticleTagsModule } from './article-tags/article-tags.module';
+import { RolesModule } from './roles/roles.module';
 import configuration from './config/config';
 
 @Module({
@@ -11,7 +12,7 @@ import configuration from './config/config';
     envFilePath: ['.env.development.local', '.env.development'],
     isGlobal: true,
     load: [configuration]
-  }), ArticlesModule, ArticleTagsModule],
+  }), ArticlesModule, ArticleTagsModule, RolesModule],
   controllers: [],
   providers: [],
 })
