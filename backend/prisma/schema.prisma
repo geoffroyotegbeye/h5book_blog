@@ -8,15 +8,19 @@ datasource db {
 }
 
 model User {
-  uuid        String    @id @default(cuid())
-  email       String    @unique
-  firstName   String
-  lastName    String
-  isActivated Boolean   @default(false)
-  activatedAt DateTime?
-  password    String
-  role        String    @default("USER")
-  profileUrl  String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  uuid                    String    @id @default(cuid())
+  email                   String    @unique
+  firstName               String
+  lastName                String
+  password                String
+  role                    String    @default("USER")
+  profileUrl              String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  isResettingPassword     Boolean   @default(false)
+  resetPasswordToken      String?
+  activationCode          String?
+  activationCodeExpiredAt DateTime?
+  isActivated             Boolean   @default(false)
+  activatedAt             DateTime?
 }
