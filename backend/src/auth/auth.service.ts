@@ -218,6 +218,10 @@ export class AuthService {
                 throw new HttpException("Utilisateur n'existe pas.", HttpStatus.BAD_REQUEST);
             }
 
+            if (!existingUser.isResettingPassword) {
+                throw new HttpException("Aucune demande de réinitialisation de mot de mot de passe n'est en cours.", HttpStatus.BAD_REQUEST);
+            }
+
             const hashPassword = await this.hashPassword({password: resetPasswordDto.password});
 
             await this.prisma.user.update({
