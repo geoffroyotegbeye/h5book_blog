@@ -9,14 +9,20 @@ import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Cookies from 'js-cookie';
+import { useAuth } from "@/context/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { updateAuthStatus } = useAuth();
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
     try {
       const response = await api.post("/auth/login", {
         email,
@@ -32,58 +38,71 @@ export default function Login() {
         Cookies.set('accessToken', data.accessToken, { secure: true, sameSite: 'strict' });
         Cookies.set('refreshToken', data.refreshToken, { secure: true, sameSite: 'strict' });
         Cookies.set('user', JSON.stringify(data.user), { secure: true, sameSite: 'strict' });
+        
+        // Mettre à jour le contexte d'authentification
+        await updateAuthStatus();
 
-        toast.success(data.message);
+        toast.success("Connexion réussie !");
+        
         setTimeout(() => {
           router.push("/");
-        }, 2000);
+        }, 1000);
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "An error occurred during login.");
+      console.error("Erreur de connexion:", error);
+      toast.error(error.response?.data?.message || "Une erreur est survenue lors de la connexion.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
       <ToastContainer />
       <div className="max-w-md w-full px-6 py-8 bg-white dark:bg-gray-800 shadow-md rounded-lg">
         <h1 className="text-2xl font-bold text-center mb-8 text-gray-900 dark:text-white">
-          Se connexion
+          Se connecter
         </h1>
-        <input
-          type="text"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-4 py-2 mb-4 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                     dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
-        />
-        <div className="relative">
+        <form onSubmit={handleLogin}>
           <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 mb-6 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                       dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full px-4 py-2 mb-4 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                     dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
           />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Mot de passe"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full px-4 py-2 mb-6 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                       dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/3 transform -translate-y-1/2 text-gray-500 dark:text-gray-400"
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
           <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/3 transform -translate-y-1/2 text-gray-500"
+            type="submit"
+            disabled={isLoading}
+            className={`w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700
+                     transition-colors duration-200 mb-4 dark:bg-blue-700 dark:hover:bg-blue-800
+                     ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
-            {showPassword ? <FaEyeSlash /> : <FaEye />}
+            {isLoading ? 'Connexion en cours...' : 'Connexion'}
           </button>
-        </div>
-        <button
-          onClick={handleLogin}
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700
-                     transition-colors duration-200 mb-4 dark:bg-blue-700 dark:hover:bg-blue-800"
-        >
-          Connexion
-        </button>
+        </form>
         <p className="text-center mt-4 text-gray-600 dark:text-gray-300">
-          Pas encore inscrit?{" "}
+          Pas encore inscrit ?{" "}
           <Link
             href="/register"
             className="text-blue-600 hover:underline dark:text-blue-400"

@@ -101,7 +101,7 @@ export class AuthService {
 
             return {
                 error: false,
-                message: 'Connexion réussie !',
+                message: 'Connexion réussie!',
                 user: {
                     id: userWithoutPassword.uuid,
                     email: userWithoutPassword.email,

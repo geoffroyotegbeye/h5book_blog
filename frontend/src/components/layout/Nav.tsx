@@ -1,32 +1,21 @@
 // frontend\src\components\layout\Nav.tsx
+// frontend/src/components/layout/Nav.tsx
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { FiSearch, FiBell, FiChevronDown, FiUser, FiLogOut, FiMoon, FiSun } from "react-icons/fi";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import useDarkMode from "@/hook/useDarkMode";
 import Cookies from "js-cookie";
-import api from "@/lib/api";
-
-interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  avatar: string | null;  
-  profileUrl?: string;  
-  isActivated: boolean; 
-  isResettingPassword: boolean;  
-  createdAt: string; 
-  updatedAt: string;
-}
-
+import { useAuth } from "@/context/AuthContext";
 
 const NotificationItem = ({ title, time, isUnread, onClick }) => (
   <div
-    className={`p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer ${isUnread ? "bg-blue-50 dark:bg-blue-900" : ""}`}
+    className={`p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer ${
+      isUnread ? "bg-blue-50 dark:bg-blue-900" : ""
+    }`}
     onClick={onClick}
   >
     <div className="flex justify-between items-start">
@@ -38,6 +27,7 @@ const NotificationItem = ({ title, time, isUnread, onClick }) => (
 
 const Nav = () => {
   const router = useRouter();
+  const { user, isAuthenticated, isLoading, setUser, setIsAuthenticated } = useAuth();
   const [searchText, setSearchText] = useState("");
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
   const [notifications, setNotifications] = useState([
@@ -45,43 +35,9 @@ const Nav = () => {
     { id: 2, title: "Quelqu'un a partagé votre publication", time: "Il y a 1h", isUnread: true },
     { id: 3, title: "Mise à jour système disponible", time: "Il y a 2h", isUnread: false },
   ]);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const profileRef = useRef(null);
   const [darkMode, toggleDarkMode] = useDarkMode();
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const accessToken = Cookies.get("accessToken"); // Récupérer le token du cookie
-        if (accessToken) {
-          // Appel à l'API pour récupérer les informations de l'utilisateur
-          const response = await api.post("/auth/me", { token: accessToken });
-
-          console.log("Response Data:", response.data);
-
-          // Stocker les données utilisateur et decoded dans les cookies
-          Cookies.set("user", JSON.stringify(response.data.user), { expires: 7 }); // 7 jours
-          Cookies.set("decoded", JSON.stringify(response.data.decoded), { expires: 7 });
-
-          // Mettre à jour l'état local
-          setUser(response.data.user);
-          setIsAuthenticated(true);
-        } else {
-          // Si aucun token n'est trouvé, l'utilisateur n'est pas authentifié
-          setIsAuthenticated(false);
-          setUser(null);
-        }
-      } catch (error) {
-        console.error("Erreur lors de la récupération de l'utilisateur:", error);
-        setIsAuthenticated(false);
-        setUser(null);
-      }
-    };
-
-    fetchUser(); // Appel à la fonction dès le montage du composant
-  }, []);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
@@ -107,9 +63,10 @@ const Nav = () => {
   const handleLogout = () => {
     Cookies.remove("accessToken");
     Cookies.remove("refreshToken");
+    Cookies.remove("user");
     setIsAuthenticated(false);
     setUser(null);
-    // router.push("/login");
+    router.push("/login");
   };
 
   const profileMenuItems = [
@@ -156,47 +113,50 @@ const Nav = () => {
           {/* Actions */}
           <div className="flex items-center space-x-4">
             {/* Notifications */}
-            <div className="relative">
-              <button
-                className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200 notification-toggle"
-                onClick={() => setShowNotificationDropdown(!showNotificationDropdown)}
-              >
-                <FiBell className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                {notifications.some((n) => n.isUnread) && (
-                  <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-                )}
-              </button>
+            {isAuthenticated && (
+              <div className="relative">
+                <button
+                  className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200 notification-toggle"
+                  onClick={() => setShowNotificationDropdown(!showNotificationDropdown)}
+                >
+                  <FiBell className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                  {notifications.some((n) => n.isUnread) && (
+                    <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+                  )}
+                </button>
 
-              {showNotificationDropdown && (
-                <div className="absolute border right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-50 notification-dropdown">
-                  <div className="p-4">
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="font-medium dark:text-white">Notifications</h3>
-                      <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700">
-                        Tout marquer comme lu
-                      </button>
-                    </div>
-                    <div className="space-y-2">
-                      {notifications.map((notification) => (
-                        <NotificationItem key={notification.id} {...notification} onClick={handleNotificationClick} />
-                      ))}
+                {showNotificationDropdown && (
+                  <div className="absolute border right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-50 notification-dropdown">
+                    <div className="p-4">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="font-medium dark:text-white">Notifications</h3>
+                        <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700">
+                          Tout marquer comme lu
+                        </button>
+                      </div>
+                      <div className="space-y-2">
+                        {notifications.map((notification) => (
+                          <NotificationItem key={notification.id} {...notification} onClick={handleNotificationClick} />
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             {/* Profile */}
-            {isAuthenticated ? (
+            {!isLoading && (
+          <>
+            {isAuthenticated && user ? (
               <div className="relative" ref={profileRef}>
                 <button
                   className="flex items-center space-x-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 p-2 transition duration-200 profile-toggle"
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                 >
-                  {/* Affichage de l'avatar utilisateur */}
                   <Image
-                    src={user?.profileUrl || "https://via.placeholder.com/32"}  // Utilisation de profileUrl ou d'une image par défaut
-                    alt={user?.firstName || "Utilisateur"}
+                    src={user.profileUrl || "https://via.placeholder.com/32"}
+                    alt={user.firstName || "Utilisateur"}
                     width={32}
                     height={32}
                     className="rounded-full"
@@ -208,18 +168,18 @@ const Nav = () => {
                   <div className="absolute border right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-50 profile-dropdown">
                     <div className="p-4">
                       <div className="flex items-center space-x-3 mb-4">
-                        {/* Affichage de l'avatar dans le menu déroulant */}
                         <Image
-                          src={user?.profileUrl || "https://via.placeholder.com/40"}  // Utilisation de profileUrl ou d'une image par défaut
-                          alt={user?.firstName || "Utilisateur"}
+                          src={user.profileUrl || "https://via.placeholder.com/40"}
+                          alt={user.firstName || "Utilisateur"}
                           width={40}
                           height={40}
                           className="rounded-full"
                         />
                         <div>
-                          {/* Affichage du nom et de l'email de l'utilisateur */}
-                          <h3 className="font-medium dark:text-white">{user?.firstName} {user?.lastName}</h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{user?.email}</p>
+                          <h3 className="font-medium dark:text-white">
+                            {user.firstName} {user.lastName}
+                          </h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
                         </div>
                       </div>
                       <div className="space-y-1">
@@ -245,6 +205,8 @@ const Nav = () => {
               <Link href="/login" className="text-gray-600 dark:text-gray-300">
                 Se connecter
               </Link>
+            )}
+            </>
             )}
           </div>
         </div>
