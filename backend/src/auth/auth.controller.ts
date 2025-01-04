@@ -1,52 +1,61 @@
 // backend\src\auth\auth.controller.ts
-import { Body, Controller, Post, Get, UseGuards, Request, HttpStatus, HttpException, Headers } from "@nestjs/common";
-import { AuthService } from "./auth.service";
-import { LoginDto } from "./dto/login.dto";
-import { RegisterDto } from "./dto/register.dto";
-import { ResetPasswordDto } from "./dto/reset-password.dto";
-import { ActivateAccountDto } from "./dto/activate-account.dto";
-import { JwtAuthGuard } from  './jwt/jwt-auth.guard';
+import {
+  Body,
+  Controller,
+  Post,
+  Get,
+  UseGuards,
+  Request,
+  HttpStatus,
+  HttpException,
+  Headers,
+} from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ActivateAccountDto } from './dto/activate-account.dto';
+import { JwtAuthGuard } from './jwt/jwt-auth.guard';
 import { UserService } from '../user/user.service';
 import { RequestWithUser } from './jwt/jwt.strategy';
 
 @Controller('auth')
 export class AuthController {
-  constructor( private readonly authService: AuthService, private readonly userService: UserService) {
-  }
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+  ) {}
 
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
-    return await this.authService.login({loginDto});
-  }
-
-   @UseGuards(JwtAuthGuard)
-   @Post('me')
-   async getUserFromToken(@Headers('authorization') authorization: string) {
-     if (!authorization || !authorization.startsWith('Bearer ')) {
-       throw new HttpException('Token manquant ou invalide', HttpStatus.UNAUTHORIZED);
-     }
- 
-     const token = authorization.split(' ')[1];
-     const user = await this.authService.getUserFromToken(token);
-     console.log(user);
-     
-     return user;
-   } 
-
-  @Post('refresh-token')
-  async refreshToken(@Body() { refreshToken }: { refreshToken: string }) {
-    return await this.authService.refreshAccessToken({refreshToken});
+    return await this.authService.login({ loginDto });
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get()
-  async getAuthenticateUser(@Request() request: RequestWithUser) {
-    return this.userService.getUser(request.user.userId);
+  @Post('me')
+  async getUserFromToken(@Headers('authorization') authorization: string) {
+    if (!authorization || !authorization.startsWith('Bearer ')) {
+      throw new HttpException(
+        'Token manquant ou invalide',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    const token = authorization.split(' ')[1];
+    const user = await this.authService.getUserFromToken(token);
+    console.log(user);
+
+    return user;
+  }
+
+  @Post('refresh-token')
+  async refreshToken(@Body() { refreshToken }: { refreshToken: string }) {
+    return await this.authService.refreshAccessToken({ refreshToken });
   }
 
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {
-    return await this.authService.register({registerDto});
+    return await this.authService.register({ registerDto });
   }
 
   @Post('activate-account')
@@ -56,12 +65,12 @@ export class AuthController {
 
   @Post('request-reset-password')
   async resetUserPasswordRequest(@Body('email') email: string) {
-    return await this.authService.resetUserPasswordRequest({email});
+    return await this.authService.resetUserPasswordRequest({ email });
   }
 
   @Get('verify-reset-password-token')
   async verifiedResetPasswordToken(@Body('token') token: string) {
-    return await this.authService.verifiedResetPasswordToken({token});
+    return await this.authService.verifiedResetPasswordToken({ token });
   }
 
   @Post('reset-user-password')
