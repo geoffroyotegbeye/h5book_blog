@@ -94,7 +94,7 @@ export class RolesService implements OnModuleInit {
 
       return {
         error: false,
-        message: 'Roles retrieved successfully.',
+        message: 'Rôles récupérés avec succès.',
         data: roles,
       };
     } catch (error) {
@@ -117,7 +117,7 @@ export class RolesService implements OnModuleInit {
 
       return {
         error: false,
-        message: 'Role retrieved successfully.',
+        message: 'Rôle récupéré avec succès.',
         data: role,
       };
     } catch (error) {
@@ -130,18 +130,17 @@ export class RolesService implements OnModuleInit {
 
   async update(id: string, updateRoleDto: UpdateRoleDto) {
     try {
-      // Vérification si le nom du rôle a changé et si le nouveau nom est unique
       const existingRole = await this.prisma.role.findUnique({
         where: { uuid: id },
       });
 
       if (!existingRole) {
-        throw new HttpException('Role not found', HttpStatus.NOT_FOUND);
+        throw new HttpException('Rôle non trouvé', HttpStatus.NOT_FOUND);
       }
 
       if (existingRole.name === updateRoleDto.name.trim()) {
         throw new HttpException(
-          'Role name has not changed',
+          "Le nom du rôle n'a pas changé",
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -152,7 +151,7 @@ export class RolesService implements OnModuleInit {
 
       if (roleWithNewName) {
         throw new HttpException(
-          'Role name already exists',
+          'Le nom du rôle existe déjà',
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -160,13 +159,13 @@ export class RolesService implements OnModuleInit {
       const updatedRole = await this.prisma.role.update({
         where: { uuid: id },
         data: {
-          name: updateRoleDto.name.trim(),
+          name: updateRoleDto.name.trim().toUpperCase(),
         },
       });
 
       return {
         error: false,
-        message: 'Role updated successfully.',
+        message: 'Rôle mis à jour avec succès.',
         data: updatedRole,
       };
     } catch (error) {
@@ -184,7 +183,7 @@ export class RolesService implements OnModuleInit {
       });
 
       if (!existingRole) {
-        throw new HttpException('Role not found', HttpStatus.NOT_FOUND);
+        throw new HttpException('Rôle non trouvé.', HttpStatus.NOT_FOUND);
       }
 
       await this.prisma.role.delete({
@@ -193,7 +192,7 @@ export class RolesService implements OnModuleInit {
 
       return {
         error: false,
-        message: 'Role deleted successfully.',
+        message: 'Rôle supprimé avec succès.',
       };
     } catch (error) {
       return {
