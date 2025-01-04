@@ -5,7 +5,7 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 @Controller('roles')
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
@@ -15,9 +15,7 @@ export class RolesController {
   @ApiResponse({ status: 201, description: 'Role created successfully.' })
   @ApiResponse({ status: 400, description: 'Bad request.' })
   create(@Body() createRoleDto: CreateRoleDto, @Request() req) {
-    const userId = req.user.userId?.userId;
-    console.log('hellosfddf', userId, createRoleDto)
-    return this.rolesService.create(createRoleDto, userId);
+    return this.rolesService.create(createRoleDto);
   }
 
   @Get()

@@ -1,20 +1,72 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  OnModuleInit,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 
 @Injectable()
-export class RolesService {
-  constructor(private readonly prisma: PrismaService) {}
+export class RolesService implements OnModuleInit {
+  private readonly logger = new Logger();
+  constructor(
+    private readonly prisma: PrismaService,
+  ) {}
 
-  async create(createRoleDto: CreateRoleDto, createdById: string) {
+  async onModuleInit() {
+    await this.seedRoles();
+  }
+
+  async seedRoles() {
+    const roles = ['ADMIN', 'USER'];
+    const startTime = Date.now();
+
+    this.logger.log(
+      `Début du l'enregistrement automatique des rôles à ${new Date().toISOString()}`,
+    );
+
+    for (const roleName of roles) {
+      try {
+        const existingRole = await this.prisma.role.findUnique({
+          where: { name: roleName },
+        });
+
+        if (!existingRole) {
+          await this.prisma.role.create({
+            data: { name: roleName },
+          });
+          this.logger.log(`✅ Rôle "${roleName}" ajouté.`);
+        } else {
+          this.logger.warn(`⚠️ Rôle "${roleName}" existe déjà.`);
+        }
+      } catch (error) {
+        this.logger.error(
+          `Erreur lors du traitement du rôle "${roleName}": ${error.message}`,
+        );
+      }
+    }
+
+    const endTime = Date.now();
+    const duration = (endTime - startTime) / 1000;
+
+    this.logger.log(`Fin du seedage des rôles à ${new Date().toISOString()}`);
+    this.logger.log(`Durée totale : ${duration.toFixed(2)} secondes.`);
+  }
+
+  async create(createRoleDto: CreateRoleDto) {
     try {
       const existingRole = await this.prisma.role.findUnique({
         where: { name: createRoleDto.name.trim() },
       });
 
       if (existingRole) {
-        throw new HttpException('Role name already exists', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          'Le nom du rôle existe déjà.',
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       const newRole = await this.prisma.role.create({
@@ -25,7 +77,7 @@ export class RolesService {
 
       return {
         error: false,
-        message: 'Role created successfully.',
+        message: 'Rôle créé avec succès.',
         data: newRole,
       };
     } catch (error) {
@@ -56,7 +108,7 @@ export class RolesService {
   async findOne(id: string) {
     try {
       const role = await this.prisma.role.findUnique({
-        where: { uuid: id }
+        where: { uuid: id },
       });
 
       if (!role) {
@@ -88,7 +140,10 @@ export class RolesService {
       }
 
       if (existingRole.name === updateRoleDto.name.trim()) {
-        throw new HttpException('Role name has not changed', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          'Role name has not changed',
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       const roleWithNewName = await this.prisma.role.findUnique({
@@ -96,7 +151,10 @@ export class RolesService {
       });
 
       if (roleWithNewName) {
-        throw new HttpException('Role name already exists', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          'Role name already exists',
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       const updatedRole = await this.prisma.role.update({
