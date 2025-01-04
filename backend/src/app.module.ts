@@ -9,7 +9,7 @@ import configuration from './config/config';
 
 @Module({
   imports: [UserModule, AuthModule, ConfigModule.forRoot({
-    envFilePath: ['.env.development.local', '.env.development'],
+    envFilePath: ['.env','.env.development.local', '.env.development'],
     isGlobal: true,
     load: [configuration]
   }), ArticlesModule, ArticleTagsModule, RolesModule],

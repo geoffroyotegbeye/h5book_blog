@@ -1,3 +1,4 @@
+// backend\src\auth\auth.service.ts
 import {Body, HttpException, HttpStatus, Injectable, Post} from "@nestjs/common";
 import {LoginDto} from "./dto/login.dto";
 import {RegisterDto} from "./dto/register.dto";
@@ -9,6 +10,7 @@ import {JwtService} from '@nestjs/jwt';
 import {MailerService} from '../mailer/mailer.service';
 import * as types from './jwt/jwt.strategy';
 import {createId} from '@paralleldrive/cuid2';
+import { use } from "passport";
 
 @Injectable()
 export class AuthService {
@@ -30,12 +32,12 @@ export class AuthService {
             });
 
             if (!userRole) {
-                throw new HttpException('Role does not exist.', HttpStatus.BAD_REQUEST);
+                throw new HttpException('Le rôle n\'existe pas.', HttpStatus.BAD_REQUEST);
             }
 
 
             if (existingUser) {
-                throw new HttpException('Existing email address', HttpStatus.BAD_REQUEST);
+                throw new HttpException('Adresse e-mail existante', HttpStatus.BAD_REQUEST);
             }
 
             const hashPassword = await this.hashPassword({password: registerDto.password});
@@ -82,7 +84,7 @@ export class AuthService {
             });
 
             if (!existingUser) {
-                throw new HttpException('Invalid credentials', HttpStatus.BAD_REQUEST);
+                throw new HttpException('Identifiants invalides', HttpStatus.BAD_REQUEST);
             }
 
             const hashedPassword = existingUser.password;
@@ -90,14 +92,25 @@ export class AuthService {
             const isPasswordValid = await this.isPasswordValid({password, hashedPassword});
 
             if (!isPasswordValid) {
-                throw new HttpException('Invalid credentials', HttpStatus.BAD_REQUEST);
+                throw new HttpException('Identifiants invalides', HttpStatus.BAD_REQUEST);
             }
 
             const {password: _, ...userWithoutPassword} = existingUser;
             const accessToken = await this.generateAccessToken({userId: userWithoutPassword.uuid});
             const refreshToken = await this.generateRefreshToken({userId: userWithoutPassword.uuid});
 
-            return {accessToken, refreshToken};
+            return {
+                error: false,
+                message: 'Connexion réussie !',
+                user: {
+                    id: userWithoutPassword.uuid,
+                    email: userWithoutPassword.email,
+                    lastName: userWithoutPassword.lastName,
+                    fistName: userWithoutPassword.firstName,
+                },
+                accessToken: accessToken, 
+                refreshToken: refreshToken
+            };
         } catch (error) {
             return {
                 error: true,
@@ -106,6 +119,35 @@ export class AuthService {
         }
     }
 
+    async getUserFromToken(token: string) {
+        try {
+            const decoded = this.jwtService.verify(token, { secret: process.env.JWT_SECRET });
+    
+            const user = await this.prisma.user.findUnique({
+                where: { uuid: decoded.userId },
+            });
+    
+            if (!user) {
+                console.log('Utilisateur introuvable');
+                throw new HttpException('Utilisateur introuvable', HttpStatus.UNAUTHORIZED);
+            }
+    
+            if (!user.isActivated) {
+                console.log('Compte non activé');
+                throw new HttpException('Compte non activé', HttpStatus.UNAUTHORIZED);
+            }
+            const { password: _, ...userWithoutPassword } = user;
+    
+            return {
+                user: userWithoutPassword,
+                decoded,
+            };
+        } catch (error) {
+            console.error('Erreur lors de la validation du token:', error.message);
+            throw new HttpException('Token invalide', HttpStatus.UNAUTHORIZED);
+        }
+    } 
+      
     async refreshAccessToken({refreshToken}: { refreshToken: string }) {
         try {
             const decoded = this.jwtService.verify(refreshToken, {secret: process.env.JWT_REFRESH_SECRET});
@@ -115,7 +157,7 @@ export class AuthService {
                 }
             });
             if (!user) {
-                throw new Error('User not found');
+                throw new Error('Utilisateur introuvable');
             }
 
             const newAccessToken = await this.generateAccessToken({userId: user.uuid});
@@ -128,10 +170,15 @@ export class AuthService {
         }
     }
 
-    async sendActivateAccountCode({email}: { email: string }) {
+    async sendActivateAccountCode(email: any) {
 
         try {
-            const existingUser = await this.prisma.user.findUnique({where: {email}});
+            let userEmail = email?.email
+            console.log(userEmail);
+            
+            const existingUser = await this.prisma.user.findUnique({where: {email: userEmail}});
+            console.log('existingUser', existingUser);
+            
             if (!existingUser) {
                 throw new HttpException("Utilisateur introuvable.", HttpStatus.BAD_REQUEST);
             }
