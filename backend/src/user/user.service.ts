@@ -25,6 +25,8 @@ export class UserService {
   }
 
   async getUser({ userId }: { userId: string }) {
+    console.log(userId);
+    
     const user = await this.prisma.user.findUnique({
       where: {
         uuid: userId,
@@ -42,6 +44,8 @@ export class UserService {
         updatedAt: true,
       },
     });
+    console.log(user);
+    
     return user;
   }
 }

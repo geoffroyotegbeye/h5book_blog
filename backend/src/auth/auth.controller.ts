@@ -1,4 +1,5 @@
-import { Body, Controller, Post, Get, UseGuards, Request } from "@nestjs/common";
+// backend\src\auth\auth.controller.ts
+import { Body, Controller, Post, Get, UseGuards, Request, HttpStatus, HttpException, Headers } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
@@ -17,6 +18,20 @@ export class AuthController {
   async login(@Body() loginDto: LoginDto) {
     return await this.authService.login({loginDto});
   }
+
+   @UseGuards(JwtAuthGuard)
+   @Post('me')
+   async getUserFromToken(@Headers('authorization') authorization: string) {
+     if (!authorization || !authorization.startsWith('Bearer ')) {
+       throw new HttpException('Token manquant ou invalide', HttpStatus.UNAUTHORIZED);
+     }
+ 
+     const token = authorization.split(' ')[1];
+     const user = await this.authService.getUserFromToken(token);
+     console.log(user);
+     
+     return user;
+   } 
 
   @Post('refresh-token')
   async refreshToken(@Body() { refreshToken }: { refreshToken: string }) {
@@ -55,7 +70,7 @@ export class AuthController {
   }
 
   @Post('send-activate-code')
-  async sendActivateAccountCode(@Body() email: string) {
-    return await this.authService.sendActivateAccountCode({email});
+  async sendActivateAccountCode(@Body() email: any) {
+    return await this.authService.sendActivateAccountCode(email);
   }
 }
