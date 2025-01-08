@@ -5,7 +5,6 @@ import {
   Post,
   Get,
   UseGuards,
-  Request,
   HttpStatus,
   HttpException,
   Headers,
@@ -17,7 +16,6 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ActivateAccountDto } from './dto/activate-account.dto';
 import { JwtAuthGuard } from './jwt/jwt-auth.guard';
 import { UserService } from '../user/user.service';
-import { RequestWithUser } from './jwt/jwt.strategy';
 
 @Controller('auth')
 export class AuthController {
