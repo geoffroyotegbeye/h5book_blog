@@ -1,5 +1,4 @@
 // frontend\src\components\layout\Nav.tsx
-// frontend/src/components/layout/Nav.tsx
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -11,7 +10,14 @@ import useDarkMode from "@/hook/useDarkMode";
 import Cookies from "js-cookie";
 import { useAuth } from "@/context/AuthContext";
 
-const NotificationItem = ({ title, time, isUnread, onClick }) => (
+interface NotificationItemProps {
+  title: string;
+  time: string;
+  isUnread: boolean;
+  onClick: () => void;
+}
+
+const NotificationItem: React.FC<NotificationItemProps> = ({ title, time, isUnread, onClick }) => (
   <div
     className={`p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer ${
       isUnread ? "bg-blue-50 dark:bg-blue-900" : ""
@@ -25,18 +31,19 @@ const NotificationItem = ({ title, time, isUnread, onClick }) => (
   </div>
 );
 
-const Nav = () => {
+
+const Nav: React.FC = () => {
   const router = useRouter();
   const { user, isAuthenticated, isLoading, setUser, setIsAuthenticated } = useAuth();
-  const [searchText, setSearchText] = useState("");
-  const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
-  const [notifications, setNotifications] = useState([
+  const [searchText, setSearchText] = useState<string>("");
+  const [showNotificationDropdown, setShowNotificationDropdown] = useState<boolean>(false);
+  const [notifications, setNotifications] = useState<Array<{ id: number; title: string; time: string; isUnread: boolean }>>([
     { id: 1, title: "Nouveau commentaire sur votre article", time: "Il y a 5min", isUnread: true },
     { id: 2, title: "Quelqu'un a partagé votre publication", time: "Il y a 1h", isUnread: true },
     { id: 3, title: "Mise à jour système disponible", time: "Il y a 2h", isUnread: false },
   ]);
-  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  const profileRef = useRef(null);
+  const [showProfileDropdown, setShowProfileDropdown] = useState<boolean>(false);
+  const profileRef = useRef<HTMLDivElement | null>(null);
   const [darkMode, toggleDarkMode] = useDarkMode();
 
   useEffect(() => {
@@ -44,8 +51,8 @@ const Nav = () => {
   }, [darkMode]);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (profileRef.current && !profileRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
         setShowProfileDropdown(false);
       }
     };
@@ -76,16 +83,21 @@ const Nav = () => {
       action: () => router.push("/profile"),
     },
     {
-      icon: darkMode ? FiSun : FiMoon,
-      label: darkMode ? "Mode éclairé" : "Mode sombre",
-      action: () => toggleDarkMode(),
-    },
-    {
       icon: FiLogOut,
       label: "Déconnexion",
       action: handleLogout,
     },
   ];
+
+  const getInitials = (firstName: string, lastName: string) => {
+    return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setShowProfileDropdown(false);
+    }
+  }, [isAuthenticated]);
 
   return (
     <nav className="bg-white border-b dark:bg-gray-800 shadow-sm sticky top-0 z-50 transition-colors duration-200">
@@ -112,6 +124,14 @@ const Nav = () => {
 
           {/* Actions */}
           <div className="flex items-center space-x-4">
+            {/* Dark Mode Toggle */}
+            <button
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200"
+              onClick={() => toggleDarkMode()}
+            >
+              {darkMode ? <FiSun className="h-5 w-5 text-gray-600 dark:text-gray-300" /> : <FiMoon className="h-5 w-5 text-gray-600 dark:text-gray-300" />}
+            </button>
+
             {/* Notifications */}
             {isAuthenticated && (
               <div className="relative">
@@ -147,66 +167,78 @@ const Nav = () => {
 
             {/* Profile */}
             {!isLoading && (
-          <>
-            {isAuthenticated && user ? (
-              <div className="relative" ref={profileRef}>
-                <button
-                  className="flex items-center space-x-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 p-2 transition duration-200 profile-toggle"
-                  onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                >
-                  <Image
-                    src={user.profileUrl || "https://via.placeholder.com/32"}
-                    alt={user.firstName || "Utilisateur"}
-                    width={32}
-                    height={32}
-                    className="rounded-full"
-                  />
-                  <FiChevronDown className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                </button>
-
-                {showProfileDropdown && (
-                  <div className="absolute border right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-50 profile-dropdown">
-                    <div className="p-4">
-                      <div className="flex items-center space-x-3 mb-4">
+              <>
+                {isAuthenticated && user ? (
+                  <div className="relative" ref={profileRef}>
+                    <button
+                      className="flex items-center space-x-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 p-2 transition duration-200 profile-toggle"
+                      onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                    >
+                      {user.profileUrl ? (
                         <Image
-                          src={user.profileUrl || "https://via.placeholder.com/40"}
+                          src={user.profileUrl}
                           alt={user.firstName || "Utilisateur"}
-                          width={40}
-                          height={40}
+                          width={32}
+                          height={32}
                           className="rounded-full"
                         />
-                        <div>
-                          <h3 className="font-medium dark:text-white">
-                            {user.firstName} {user.lastName}
-                          </h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-lg font-medium">
+                          {getInitials(user.firstName, user.lastName)}
+                        </div>
+                      )}
+                      <FiChevronDown className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                    </button>
+
+                    {showProfileDropdown && (
+                      <div className="absolute border right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-50 profile-dropdown">
+                        <div className="p-4">
+                          <div className="flex items-center space-x-3 mb-4">
+                            {user.profileUrl ? (
+                              <Image
+                                src={user.profileUrl}
+                                alt={user.firstName || "Utilisateur"}
+                                width={40}
+                                height={40}
+                                className="rounded-full"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl font-medium">
+                                {getInitials(user.firstName, user.lastName)}
+                              </div>
+                            )}
+                            <div>
+                              <h3 className="font-medium dark:text-white">
+                                {user.firstName} {user.lastName}
+                              </h3>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            {profileMenuItems.map((item, index) => {
+                              const Icon = item.icon;
+                              return (
+                                <button
+                                  key={index}
+                                  onClick={item.action}
+                                  className="w-full flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200"
+                                >
+                                  <Icon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                                  <span className="text-sm text-gray-600 dark:text-gray-300">{item.label}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
                       </div>
-                      <div className="space-y-1">
-                        {profileMenuItems.map((item, index) => {
-                          const Icon = item.icon;
-                          return (
-                            <button
-                              key={index}
-                              onClick={item.action}
-                              className="w-full flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200"
-                            >
-                              <Icon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                              <span className="text-sm text-gray-600 dark:text-gray-300">{item.label}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    )}
                   </div>
+                ) : (
+                  <Link href="/login" className="border border-gray-300 dark:border-gray-600 p-2 rounded-lg text-gray-600 dark:text-gray-300">
+                    Se connecter
+                  </Link>
                 )}
-              </div>
-            ) : (
-              <Link href="/login" className="text-gray-600 dark:text-gray-300">
-                Se connecter
-              </Link>
-            )}
-            </>
+              </>
             )}
           </div>
         </div>

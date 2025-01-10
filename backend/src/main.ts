@@ -14,18 +14,19 @@ async function bootstrap() {
   // Utilisation des pipes globaux pour valider et transformer les données entrantes
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // Supprime les propriétés non définies dans DTO
-      transform: true, // Transforme les types automatiquement
-      forbidNonWhitelisted: true, // Erreur si une propriété non définie est envoyée
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
     }),
   );
 
   // Configuration de CORS pour autoriser les requêtes depuis le frontend
   app.enableCors({
-    origin: 'http://localhost:3000', // Adresse du frontend
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Méthodes autorisées
-    allowedHeaders: ['Content-Type', 'Authorization'], // En-têtes autorisés
-    credentials: true, // Nécessaire pour l'envoi des cookies
+    origin: 'http://localhost:3000', 
+    // origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
   });
 
   // Configuration Swagger pour la documentation API
@@ -33,7 +34,7 @@ async function bootstrap() {
     .setTitle('H5Book Blog API')
     .setDescription('API pour la gestion de H5Book Blog')
     .setVersion('1.0')
-    .addBearerAuth() // Ajout d'authentification Bearer
+    .addBearerAuth() 
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

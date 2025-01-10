@@ -1,3 +1,4 @@
+// frontend\src\components\layout\LeftSidebar.tsx
 "use client";
 
 import { BiHome, BiBookOpen, BiGroup, BiBriefcase, BiCog, BiUser, BiBarChart, BiComment, BiSave, BiRefresh, BiShield, BiTag, BiUserPlus, BiLock, BiSearch, BiBell, BiWrench } from 'react-icons/bi';
@@ -6,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { FaStar } from 'react-icons/fa';
 import { GiFamilyTree } from 'react-icons/gi';
+import { useAuth } from '@/context/AuthContext';
 
 const navigationItems = [
   { id: 1, label: 'Mon flux', icon: BiHome, path: '/' },
@@ -79,12 +81,12 @@ const adminMenuItems = [
 ];
 
 export default function LeftSidebar() {
+  const { user } = useAuth();
   const [selectedNav, setSelectedNav] = useState<string | null>(null);
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
-    // Check active link and open the dropdown if the current path is within a dropdown
     const currentItem = [...navigationItems, ...adminMenuItems]
       .flatMap(item => item.isDropdown ? item.dropdownItems || [] : [item])
       .find(item => item.path === pathname);
@@ -105,6 +107,8 @@ export default function LeftSidebar() {
   const toggleDropdown = (id: number) => {
     setOpenDropdown(openDropdown === id ? null : id);
   };
+
+  const isAdmin = user?.roles?.some(role => role.name === 'ADMIN');
 
   return (
     <aside className="p-4 border shadow-md rounded-lg sticky top-24 bg-white text-gray-900 dark:bg-gray-800 dark:text-white">
@@ -143,6 +147,10 @@ export default function LeftSidebar() {
                 )}
               </div>
             );
+          }
+
+          if (item.label === 'Mon espace admin' && !isAdmin) {
+            return null;
           }
 
           return (

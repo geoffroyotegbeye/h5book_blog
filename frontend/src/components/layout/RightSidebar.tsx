@@ -20,7 +20,7 @@ export default function RightSidebar() {
   const [selectedCategory, setSelectedCategory] = useState<string>('Tendances');
 
   return (
-    <aside className="border p-4 bg-white dark:bg-gray-800 shadow-md rounded-lg space-y-6 sticky top-24">
+    <aside className="border p-4 bg-white dark:bg-gray-800 shadow-md rounded-lg space-y-6 sticky top-24 w-full">
       <div>
         <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Explorer</h2>
         <div className="space-y-1">

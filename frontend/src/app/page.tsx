@@ -195,7 +195,7 @@ const Home: React.FC = () => {
         <main className="max-w-7xl mx-auto ">
         <div className="grid grid-cols-9 gap-6">
               {/* Main Content - Feed d'articles */}
-          <div className="bordercol-span-12 md:col-span-6 lg:col-span-6">
+          <div className="col-span-12 md:col-span-6 lg:col-span-6">
             <div className='w-fit'>
               {articles.map(article => (
                 <div 
@@ -225,7 +225,7 @@ const Home: React.FC = () => {
             </div>
           </div>
 
-          <div className="col-span-9 md:col-span-3 lg:col-span-3 sticky top-20">
+          <div className="col-span-12 md:col-span-3 lg:col-span-3 sticky top-20">
               <RightSidebar />
             </div>
         </div>

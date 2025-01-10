@@ -1,4 +1,18 @@
 // types/index.ts
+interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  avatar: string | null;
+  profileUrl?: string;
+  isActivated: boolean;
+  isResettingPassword: boolean;
+  createdAt: string;
+  updatedAt: string;
+  roles: { name: string }[]; 
+}
+
 
 // Type pour les articles
 export interface Article {

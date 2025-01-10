@@ -8,31 +8,46 @@ datasource db {
 }
 
 model User {
-  uuid                    String    @id @default(cuid())
-  email                   String    @unique
+  uuid                    String     @id @default(cuid())
+  email                   String     @unique
   firstName               String
   lastName                String
   password                String
   profileUrl              String?
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
-  isResettingPassword     Boolean   @default(false)
-  resetPasswordToken      String?   @unique
+  createdAt               DateTime   @default(now())
+  updatedAt               DateTime   @updatedAt
+  isResettingPassword     Boolean    @default(false)
+  resetPasswordToken      String?    @unique
   activationCode          String?
   activationCodeExpiredAt DateTime?
-  isActivated             Boolean   @default(false)
+  isActivated             Boolean    @default(false)
   activatedAt             DateTime?
-  roles                   Role[]    @relation("UserRoles")
-  createdArticles         Article[] @relation("UserArticles")
-  createdTags             Tag[]     @relation("UserTags")
+  roles                   Role[]     @relation("UserRoles")
+  createdArticles         Article[]  @relation("UserArticles")
+  createdTags             Tag[]      @relation("UserTags")
+  userToken               UserToken? @relation
 
   @@map("users")
 }
 
+model UserToken {
+  uuid         String    @id @default(cuid())
+  userId       String
+  accessToken  String?   @unique
+  refreshToken String?   @unique
+  createdAt    DateTime  @default(now())
+  expiresAt    DateTime?
+
+  user User @relation(fields: [userId], references: [uuid])
+
+  @@unique([userId])
+  @@map("user_tokens")
+}
+
 model Role {
-  uuid    String  @id @default(cuid())
-  name    String  @unique
-  users   User[]  @relation("UserRoles")
+  uuid  String @id @default(cuid())
+  name  String @unique
+  users User[] @relation("UserRoles")
 
   @@map("roles")
 }

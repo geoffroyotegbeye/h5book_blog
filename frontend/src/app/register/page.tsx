@@ -1,12 +1,14 @@
+// frontend/src/app/register/page.tsx
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaGoogle, FaGithub } from "react-icons/fa";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+// import { signIn } from 'next-auth/react';
 
 export default function Register() {
   const [firstName, setFirstName] = useState("");
@@ -20,7 +22,7 @@ export default function Register() {
 
   const handleRegister = async () => {
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match.");
+      toast.error("Les mots de passe ne correspondent pas.");
       return;
     }
 
@@ -43,8 +45,16 @@ export default function Register() {
         }, 2000);
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "An error occurred during registration.");
+      toast.error(error.response?.data?.message || "Une erreur est survenue lors de l'inscription.");
     }
+  };
+
+  const handleGoogleSignIn = () => {
+    // signIn('google');
+  };
+
+  const handleGitHubSignIn = () => {
+    // signIn('github');
   };
 
   return (
@@ -56,7 +66,7 @@ export default function Register() {
         </h1>
         <input
           type="text"
-          placeholder="First Name"
+          placeholder="Prénom"
           value={firstName}
           onChange={(e) => setFirstName(e.target.value)}
           className="w-full px-4 py-2 mb-4 border rounded focus:ring-2 focus:ring-green-500 focus:border-transparent
@@ -64,7 +74,7 @@ export default function Register() {
         />
         <input
           type="text"
-          placeholder="Last Name"
+          placeholder="Nom"
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
           className="w-full px-4 py-2 mb-4 border rounded focus:ring-2 focus:ring-green-500 focus:border-transparent
@@ -81,7 +91,7 @@ export default function Register() {
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
-            placeholder="Password"
+            placeholder="Mot de passe"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-4 py-2 mb-4 border rounded focus:ring-2 focus:ring-green-500 focus:border-transparent
@@ -98,7 +108,7 @@ export default function Register() {
         <div className="relative">
           <input
             type={showConfirmPassword ? "text" : "password"}
-            placeholder="Confirm Password"
+            placeholder="Confirmer le mot de passe"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             className="w-full px-4 py-2 mb-6 border rounded focus:ring-2 focus:ring-green-500 focus:border-transparent
@@ -119,8 +129,24 @@ export default function Register() {
         >
           Inscription
         </button>
+        <div className="flex justify-center space-x-4">
+          <button
+            onClick={handleGoogleSignIn}
+            className="flex items-center px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors duration-200"
+          >
+            <FaGoogle className="mr-2" />
+            Inscription avec Google
+          </button>
+          <button
+            onClick={handleGitHubSignIn}
+            className="flex items-center px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 transition-colors duration-200"
+          >
+            <FaGithub className="mr-2" />
+            Inscription avec GitHub
+          </button>
+        </div>
         <p className="text-center mt-4 text-gray-600 dark:text-gray-300">
-          Avez-vous déja un compte?{" "}
+          Avez-vous déjà un compte?{" "}
           <Link
             href="/login"
             className="text-green-600 hover:underline dark:text-green-400"

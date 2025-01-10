@@ -4,19 +4,9 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import api from "@/lib/api";
+import { User } from '@/types';
 
-interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  avatar: string | null;
-  profileUrl?: string;
-  isActivated: boolean;
-  isResettingPassword: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+
 
 interface AuthContextType {
   user: User | null;
@@ -29,7 +19,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true); 
 
@@ -39,6 +29,8 @@ export const AuthProvider = ({ children }) => {
       if (accessToken) {
         const response = await api.post("/auth/me", { token: accessToken });
         setUser(response.data.user);
+        console.log(response.data.user);
+        
         setIsAuthenticated(true);
       } else {
         setUser(null);
