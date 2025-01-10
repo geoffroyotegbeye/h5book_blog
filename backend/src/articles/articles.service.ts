@@ -1,3 +1,4 @@
+// backend\src\articles\articles.service.ts
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateArticleDto } from './dto/create-article.dto';
