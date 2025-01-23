@@ -43,4 +43,9 @@ export class CreateArticleDto {
     @ApiProperty()
     @IsArray()
     tags?: string[];
+
+    @IsOptional()
+    @ApiProperty()
+    @IsArray()
+    categories?: string[];
 }
