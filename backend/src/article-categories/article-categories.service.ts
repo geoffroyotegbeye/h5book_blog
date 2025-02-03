@@ -9,7 +9,6 @@ export class ArticleCategoriesService {
 
   async create(
     createArticleCategoryDto: CreateArticleCategoryDto,
-    userId: string,
   ) {
     try {
       const existingTag = await this.prisma.category.findUnique({
@@ -28,7 +27,7 @@ export class ArticleCategoriesService {
       const newTag = await this.prisma.category.create({
         data: {
           name: createArticleCategoryDto.name.trim(),
-          createdById: userId,
+          createdById: createArticleCategoryDto.userId,
         },
       });
 
@@ -142,6 +141,7 @@ export class ArticleCategoriesService {
         },
         data: {
           name: updateArticleCategoryDto.name.trim(),
+          createdById: updateArticleCategoryDto.userId,
         },
       });
       return {

@@ -26,10 +26,9 @@ export class ArticleCategoriesController {
     @Body() createArticleCategoryDto: CreateArticleCategoryDto,
     @Request() req: any,
   ) {
-    const userId = req.user.userId?.userId;
+    // const userId = req.user.userId?.userId;
     return this.articleCategoriesService.create(
       createArticleCategoryDto,
-      userId,
     );
   }
 

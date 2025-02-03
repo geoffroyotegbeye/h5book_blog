@@ -9,4 +9,9 @@ export class CreateArticleCategoryDto {
     @ApiProperty()
     @IsString()
     name: string;
+
+    @IsNotEmpty()
+    @ApiProperty()
+    @IsString()
+    userId: string;
 }
