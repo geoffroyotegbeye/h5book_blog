@@ -27,10 +27,18 @@ export class ArticlesService {
                 })),
               }
               : undefined,
+          categories: createArticleDto.categories
+            ? {
+              connect: createArticleDto.categories.map((categoryId) => ({
+                uuid: categoryId,
+              })),
+            }
+            : undefined,
           createdById: userId,
         },
         include: {
           tags: true,
+          categories: true,
         },
       });
 
@@ -52,6 +60,7 @@ export class ArticlesService {
       const articles = await this.prisma.article.findMany({
         include: {
           tags: true,
+          categories: true,
         },
       });
 
@@ -76,6 +85,7 @@ export class ArticlesService {
         },
         include: {
           tags: true,
+          categories: true,
         },
       });
 
@@ -134,6 +144,11 @@ export class ArticlesService {
                 set: updateArticleDto.tags.map((tagId) => ({ uuid: tagId })),
               }
               : undefined,
+          categories: updateArticleDto.categories
+            ? {
+              set: updateArticleDto.categories.map((categoryId) => ({ uuid: categoryId })),
+            }
+            : undefined,
         },
         include: {
           tags: true,
