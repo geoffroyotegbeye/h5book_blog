@@ -1,44 +1,57 @@
-"use client"
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { FiPlus, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
 const BlogManagementPage = () => {
   const router = useRouter();
-  const [articles, setArticles] = useState([
-    {
-      id: "azertyuiop",
-      title: "Les nouveautés de React 19 expliquées simplement",
-      author: "Jean Dupont",
-      source: "DevActu.fr",
-      category: "Développement Web",
-      tags: ["React", "JavaScript", "Frontend", "Web Dev"],
-      summary: "Découvrez les nouvelles fonctionnalités qui vont révolutionner le développement React, avec des exemples pratiques et des conseils pour tirer parti de cette nouvelle version.",
-      content: `React 19 apporte des améliorations significatives en termes de performance et de fonctionnalités. Parmi les nouveautés, nous retrouvons le rendu concurrentiel, des hooks améliorés et une gestion d'état plus performante. Ces mises à jour permettent aux développeurs de créer des applications plus réactives et fluides. Par exemple, le nouvel API Concurrent Mode permet un rendu en douceur des composants tout en évitant les blocages...`,
-      likes: 42,
-      comments: 12,
-      time: "Il y a 2h",
-      image: "https://cdn.leonardo.ai/users/75be81c6-02b9-4765-9902-3940da5d8f94/generations/825fa874-6cdc-4cdb-9a77-1d5f875a9a73/Leonardo_Phoenix_Description_A_darkened_scene_where_the_Deputy_0.jpg?w=512",
-      favorite: true
-    }
-  ]);
+  const [articles, setArticles] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState(null);
-  const [newArticle, setNewArticle] = useState({ title: '', author: '', date: '', content: '' });
-  
+  const [newArticle, setNewArticle] = useState({
+    title: '',
+    author: '',
+    source: '',
+    category: '',
+    summary: '',
+    content: '',
+    tags: [],
+    time: '',
+    image: '',
+    favorite: false
+  });
+
   useEffect(() => {
-    // Fetch the list of articles from the server
     const fetchArticles = async () => {
       try {
-        const response = await fetch('/api/articles');
-        const data = await response.json();
-        setArticles(data);
+        const accessToken = Cookies.get('accessToken');
+        if (!accessToken) {
+          console.error("Token d'authentification manquant.");
+          return;
+        }
+
+        const response = await axios.get('http://localhost:4000/articles', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        const data = response.data;
+
+        if (data.error) {
+          console.error(data.message);
+        } else {
+          setArticles(data.data);
+        }
       } catch (error) {
-        console.error('Error fetching articles:', error);
+        console.error("Erreur lors de la récupération des articles:", error);
       }
     };
+
     fetchArticles();
   }, []);
 
@@ -59,15 +72,19 @@ const BlogManagementPage = () => {
 
   const handleSaveArticle = async () => {
     try {
-      await fetch('/api/articles', {
-        method: 'POST',
+      const accessToken = Cookies.get('accessToken');
+      if (!accessToken) {
+        console.error("Token d'authentification manquant.");
+        return;
+      }
+
+      await axios.post('http://localhost:4000/articles', newArticle, {
         headers: {
+          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newArticle),
       });
       setShowCreateModal(false);
-      // Refetch the list of articles
       fetchArticles();
     } catch (error) {
       console.error('Error saving article:', error);
@@ -76,15 +93,19 @@ const BlogManagementPage = () => {
 
   const handleUpdateArticle = async () => {
     try {
-      await fetch(`/api/articles/${selectedArticle.id}`, {
-        method: 'PUT',
+      const accessToken = Cookies.get('accessToken');
+      if (!accessToken) {
+        console.error("Token d'authentification manquant.");
+        return;
+      }
+
+      await axios.put(`http://localhost:4000/articles/${selectedArticle.uuid}`, newArticle, {
         headers: {
+          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newArticle),
       });
       setShowEditModal(false);
-      // Refetch the list of articles
       fetchArticles();
     } catch (error) {
       console.error('Error updating article:', error);
@@ -93,14 +114,46 @@ const BlogManagementPage = () => {
 
   const handleDeleteArticleRequest = async () => {
     try {
-      await fetch(`/api/articles/${selectedArticle.id}`, {
-        method: 'DELETE',
+      const accessToken = Cookies.get('accessToken');
+      if (!accessToken) {
+        console.error("Token d'authentification manquant.");
+        return;
+      }
+
+      await axios.delete(`http://localhost:4000/articles/${selectedArticle.uuid}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
       setShowDeleteModal(false);
-      // Refetch the list of articles
       fetchArticles();
     } catch (error) {
       console.error('Error deleting article:', error);
+    }
+  };
+
+  const fetchArticles = async () => {
+    try {
+      const accessToken = Cookies.get('accessToken');
+      if (!accessToken) {
+        console.error("Token d'authentification manquant.");
+        return;
+      }
+
+      const response = await axios.get('http://localhost:4000/articles', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = response.data;
+
+      if (data.error) {
+        console.error(data.message);
+      } else {
+        setArticles(data.data);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération des articles:", error);
     }
   };
 
@@ -109,8 +162,8 @@ const BlogManagementPage = () => {
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Articles du Blog</h1>
-          <button 
-            onClick={handleCreateArticle} 
+          <button
+            onClick={handleCreateArticle}
             className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center"
           >
             <FiPlus className="mr-2" /> Ajouter un article
@@ -127,10 +180,10 @@ const BlogManagementPage = () => {
           </thead>
           <tbody>
             {articles.map((article) => (
-              <tr key={article.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+              <tr key={article.uuid} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                 <td className="p-2 border-b">{article.title}</td>
                 <td className="p-2 border-b">{article.author}</td>
-                <td className="p-2 border-b">{article.date}</td>
+                <td className="p-2 border-b">{article.time}</td>
                 <td className="p-2 border-b">
                   <div className="flex space-x-2">
                     <button
@@ -173,15 +226,50 @@ const BlogManagementPage = () => {
               className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
             />
             <input
-              type="date"
-              value={newArticle.date}
-              onChange={(e) => setNewArticle({ ...newArticle, date: e.target.value })}
+              type="text"
+              placeholder="Source"
+              value={newArticle.source}
+              onChange={(e) => setNewArticle({ ...newArticle, source: e.target.value })}
+              className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
+            />
+            <input
+              type="text"
+              placeholder="Catégorie"
+              value={newArticle.category}
+              onChange={(e) => setNewArticle({ ...newArticle, category: e.target.value })}
+              className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
+            />
+            <input
+              type="text"
+              placeholder="Résumé"
+              value={newArticle.summary}
+              onChange={(e) => setNewArticle({ ...newArticle, summary: e.target.value })}
               className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
             />
             <textarea
               placeholder="Contenu"
               value={newArticle.content}
               onChange={(e) => setNewArticle({ ...newArticle, content: e.target.value })}
+              className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
+            />
+            <input
+              type="text"
+              placeholder="Tags (séparés par des virgules)"
+              value={newArticle.tags.join(', ')}
+              onChange={(e) => setNewArticle({ ...newArticle, tags: e.target.value.split(',').map(tag => tag.trim()) })}
+              className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
+            />
+            <input
+              type="datetime-local"
+              value={newArticle.time}
+              onChange={(e) => setNewArticle({ ...newArticle, time: e.target.value })}
+              className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
+            />
+            <input
+              type="text"
+              placeholder="Image URL"
+              value={newArticle.image}
+              onChange={(e) => setNewArticle({ ...newArticle, image: e.target.value })}
               className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
             />
             <div className="flex justify-between">
@@ -216,15 +304,50 @@ const BlogManagementPage = () => {
               className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
             />
             <input
-              type="date"
-              value={newArticle.date}
-              onChange={(e) => setNewArticle({ ...newArticle, date: e.target.value })}
+              type="text"
+              placeholder="Source"
+              value={newArticle.source}
+              onChange={(e) => setNewArticle({ ...newArticle, source: e.target.value })}
+              className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
+            />
+            <input
+              type="text"
+              placeholder="Catégorie"
+              value={newArticle.category}
+              onChange={(e) => setNewArticle({ ...newArticle, category: e.target.value })}
+              className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
+            />
+            <input
+              type="text"
+              placeholder="Résumé"
+              value={newArticle.summary}
+              onChange={(e) => setNewArticle({ ...newArticle, summary: e.target.value })}
               className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
             />
             <textarea
               placeholder="Contenu"
               value={newArticle.content}
               onChange={(e) => setNewArticle({ ...newArticle, content: e.target.value })}
+              className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
+            />
+            <input
+              type="text"
+              placeholder="Tags (séparés par des virgules)"
+              value={newArticle.tags.join(', ')}
+              onChange={(e) => setNewArticle({ ...newArticle, tags: e.target.value.split(',').map(tag => tag.trim()) })}
+              className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
+            />
+            <input
+              type="datetime-local"
+              value={newArticle.time}
+              onChange={(e) => setNewArticle({ ...newArticle, time: e.target.value })}
+              className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
+            />
+            <input
+              type="text"
+              placeholder="Image URL"
+              value={newArticle.image}
+              onChange={(e) => setNewArticle({ ...newArticle, image: e.target.value })}
               className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
             />
             <div className="flex justify-between">

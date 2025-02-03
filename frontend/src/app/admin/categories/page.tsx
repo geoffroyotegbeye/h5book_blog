@@ -1,3 +1,4 @@
+// frontend\src\app\admin\categories\page.tsx
 "use client"
 import React, { useState, useEffect } from 'react';
 import { FiPlus, FiEdit2, FiTrash2 } from 'react-icons/fi';

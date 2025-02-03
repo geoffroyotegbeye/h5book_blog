@@ -1,6 +1,6 @@
 // types/index.ts
 interface User {
-  id: string;
+  uuid: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -16,7 +16,7 @@ interface User {
 
 // Type pour les articles
 export interface Article {
-  id: string;
+  uuid: string;
   title: string;
   author: string;
   source: string;
